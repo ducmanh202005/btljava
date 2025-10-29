@@ -31,8 +31,11 @@ public class Bullet {
     
     public void draw(Graphics2D g2d) {
         // Vẽ bullet đơn giản
+        if(Assets.bulletImage!=null) {
+            g2d.drawImage(Assets.bulletImage, x, y, width, height, null);
+        }else{
         g2d.setColor(Color.YELLOW);
-        g2d.fillRect(x, y, width, height);
+        g2d.fillRect(x, y, width, height);}
     }
     
     public Rectangle getBounds() {

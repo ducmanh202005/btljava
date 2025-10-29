@@ -9,7 +9,7 @@ import java.awt.*;
 public class Player {
     private int x, y;
     private int width = 40;
-    private int height = 30;
+    private int height = 40;
     private int speed = 5;
     private boolean active = true;
     
@@ -21,11 +21,16 @@ public class Player {
     public void update() {
         // Logic cập nhật player sẽ được implement bởi Thành viên 2
     }
-    
+
     public void draw(Graphics2D g2d) {
-        // Vẽ player đơn giản
-        g2d.setColor(Color.GREEN);
-        g2d.fillRect(x, y, width, height);
+        // Thay vì vẽ hình chữ nhật, hãy vẽ hình ảnh từ lớp Assets
+        if (Assets.playerImage != null) {
+            g2d.drawImage(Assets.playerImage, x, y, width, height, null);
+        } else {
+            // Dự phòng: nếu ảnh không load được, vẫn vẽ hình chữ nhật
+            g2d.setColor(Color.GREEN);
+            g2d.fillRect(x, y, width, height);
+        }
     }
     
     public void moveLeft() {

@@ -15,6 +15,7 @@ public class Assets {
     public static BufferedImage enemyImage;
     public static BufferedImage bulletImage;
     public static BufferedImage explosionImage;
+    public static BufferedImage backGroundImage;
     
     // Âm thanh
     public static Clip shootSound;
@@ -33,12 +34,16 @@ public class Assets {
      * Load hình ảnh
      */
     private static void loadImages() {
+
         try {
             // Load hình ảnh từ thư mục resources
+
             playerImage = loadImage("/images/player.png");
             enemyImage = loadImage("/images/enemy.png");
             bulletImage = loadImage("/images/bullet.png");
             explosionImage = loadImage("/images/explosion.png");
+            backGroundImage = loadImage("/images/backGround.png");
+            System.out.println("[DEBUG] ĐÃ LOAD THÀNH CÔNG TẤT CẢ HÌNH ẢNH!");
         } catch (Exception e) {
             System.err.println("Lỗi load hình ảnh: " + e.getMessage());
             // Tạo hình ảnh mặc định nếu không load được

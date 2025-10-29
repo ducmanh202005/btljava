@@ -32,8 +32,12 @@ public class Enemy {
     
     public void draw(Graphics2D g2d) {
         // Vẽ enemy đơn giản
-        g2d.setColor(Color.RED);
-        g2d.fillRect(x, y, width, height);
+        if(Assets.enemyImage != null){
+            g2d.drawImage(Assets.enemyImage,x,y,width,height,null);
+        }else {
+            g2d.setColor(Color.RED);
+            g2d.fillRect(x, y, width, height);
+        }
     }
     
     public Rectangle getBounds() {
