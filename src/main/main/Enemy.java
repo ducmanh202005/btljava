@@ -8,8 +8,8 @@ import java.awt.*;
  */
 public class Enemy {
     private int x, y;
-    private int width = 30;
-    private int height = 30;
+    private int width = 50;
+    private int height = 50;
     private int speed = 1;
     private boolean active = true;
     private int direction = 1; // 1 = phải, -1 = trái

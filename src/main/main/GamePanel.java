@@ -65,7 +65,7 @@ public class GamePanel extends JPanel implements ActionListener {
         inputHandler = new InputHandler();
         
         // Khởi tạo game objects
-        player = new Player(WIDTH / 2, HEIGHT - 50);
+        player = new Player(WIDTH / 2 - 40, HEIGHT - 130);
         enemies = new ArrayList<>();
         playerBullets = new ArrayList<>();
         enemyBullets = new ArrayList<>();
@@ -223,7 +223,6 @@ public class GamePanel extends JPanel implements ActionListener {
     private void updateGameObjects() {
         // Update player
         player.update();
-        
         // Update enemies
         for (Enemy enemy : enemies) {
             enemy.update();
@@ -363,6 +362,7 @@ public class GamePanel extends JPanel implements ActionListener {
      */
     private void drawGame(Graphics2D g2d) {
         // Vẽ player
+
         player.draw(g2d);
         
         // Vẽ enemies

@@ -8,8 +8,8 @@ import java.awt.*;
  */
 public class Bullet {
     private int x, y;
-    private int width = 4;
-    private int height = 10;
+    private int width = 20;
+    private int height = 25;
     private int speed = 7;
     private int direction; // 1 = xuống, -1 = lên
     private boolean active = true;

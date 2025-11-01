@@ -8,8 +8,8 @@ import java.awt.*;
  */
 public class Player {
     private int x, y;
-    private int width = 40;
-    private int height = 40;
+    private int width = 80;
+    private int height = 80;
     private int speed = 5;
     private boolean active = true;
     
@@ -51,8 +51,8 @@ public class Player {
     }
     
     public void reset() {
-        x = GamePanel.WIDTH / 2;
-        y = GamePanel.HEIGHT - 50;
+        x = GamePanel.WIDTH / 2-40;
+        y = GamePanel.HEIGHT - 130;
         active = true;
     }
     
