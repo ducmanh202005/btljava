@@ -96,12 +96,12 @@ public class Enemy {
                 break;
             case BOSS:
                 this.speed = baseSpeed * 0.4;
-                this.maxHP = baseHP * 15 + (level * 8);
+                this.maxHP = baseHP * 5 + (level * 5);
                 this.damage = baseDamage * 4 + (level / 2);
                 this.scoreValue = 200 * level;
                 // ★★★ BOSS TO HƠN ★★★
-                this.width = 120;  // Tăng từ 90 lên 120
-                this.height = 120; // Tăng từ 90 lên 120
+                this.width = 150;  // Tăng từ 90 lên 120
+                this.height = 150; // Tăng từ 90 lên 120
                 break;
         }
         
