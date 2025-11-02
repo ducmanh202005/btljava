@@ -13,6 +13,7 @@ public class Assets {
     // Hình ảnh
     public static BufferedImage playerImage;
     public static BufferedImage enemyImage;
+    public static BufferedImage bossImage;
     public static BufferedImage bulletImage;
     public static BufferedImage explosionImage;
     public static BufferedImage backGroundImage;
@@ -40,6 +41,11 @@ public class Assets {
 
             playerImage = loadImage("/images/player.png");
             enemyImage = loadImage("/images/enemy.png");
+            try {
+                bossImage = loadImage("/images/boss1.png");
+            } catch (Exception e) {
+                bossImage = enemyImage; // Fallback nếu không có boss image
+            }
             bulletImage = loadImage("/images/bullet.png");
             explosionImage = loadImage("/images/explosion.png");
             backGroundImage = loadImage("/images/backGround.png");

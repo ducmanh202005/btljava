@@ -1,110 +1,89 @@
 package main;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.*;
 
 /**
- * GamePanel - JPanel chính để vẽ game và xử lý game loop
+ * GamePanel - FIXED COMPLETE VERSION
  */
 public class GamePanel extends JPanel implements ActionListener {
-    // Kích thước màn hình
     public static final int WIDTH = 800;
     public static final int HEIGHT = 600;
     
-    // Game loop
     private Timer gameTimer;
     private static final int FPS = 60;
     private static final int DELAY = 1000 / FPS;
     
-    // Game state
     private GameState currentState;
     private InputHandler inputHandler;
     
-    // Game objects (sẽ được các thành viên khác implement)
     private Player player;
     private List<Enemy> enemies;
     private List<Bullet> playerBullets;
     private List<Bullet> enemyBullets;
+    private List<Explosion> explosions;
+    private List<Item> items;
+    private WaveManager waveManager;
     
-    // Game variables
     private int score;
     private int lives;
     private int level;
     private boolean gameRunning;
     
-    // UI
     private Font gameFont;
     private Font bigFont;
 
     public GamePanel() {
-        // Thiết lập panel
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         setBackground(Color.BLACK);
         setFocusable(true);
         
-        // Khởi tạo
         initializeGame();
         setupInput();
         setupTimer();
         setupFonts();
-        // Bắt đầu timer để menu cũng nhận input
         gameTimer.start();
         requestFocusInWindow();
     }
     
-    /**
-     * Khởi tạo game
-     */
     private void initializeGame() {
         currentState = GameState.MENU;
         inputHandler = new InputHandler();
         
-        // Khởi tạo game objects
         player = new Player(WIDTH / 2 - 40, HEIGHT - 130);
         enemies = new ArrayList<>();
         playerBullets = new ArrayList<>();
         enemyBullets = new ArrayList<>();
+        explosions = new ArrayList<>();
+        items = new ArrayList<>();
+        waveManager = new WaveManager();
         
-        // Game variables
         score = 0;
         lives = 3;
         level = 1;
         gameRunning = false;
         
-        // Load assets
         Assets.loadAssets();
     }
     
-    /**
-     * Thiết lập input handler
-     */
     private void setupInput() {
         addKeyListener(inputHandler);
     }
     
-    /**
-     * Thiết lập timer cho game loop
-     */
     private void setupTimer() {
         gameTimer = new Timer(DELAY, this);
     }
     
-    /**
-     * Thiết lập font
-     */
     private void setupFonts() {
         gameFont = new Font("Arial", Font.BOLD, 16);
         bigFont = new Font("Arial", Font.BOLD, 32);
     }
     
-    /**
-     * Bắt đầu game
-     */
     public void startGame() {
         currentState = GameState.PLAYING;
         gameRunning = true;
@@ -112,17 +91,11 @@ public class GamePanel extends JPanel implements ActionListener {
         requestFocus();
     }
     
-    /**
-     * Dừng game
-     */
     public void stopGame() {
         gameRunning = false;
         gameTimer.stop();
     }
     
-    /**
-     * Reset game
-     */
     public void resetGame() {
         score = 0;
         lives = 3;
@@ -130,61 +103,42 @@ public class GamePanel extends JPanel implements ActionListener {
         playerBullets.clear();
         enemyBullets.clear();
         enemies.clear();
+        explosions.clear();
+        items.clear();
+        waveManager = new WaveManager();
         player.reset();
-        spawnEnemies();
+        spawnWave();
     }
     
     /**
-     * Spawn enemies cho level hiện tại
+     * Spawn wave enemies
      */
-    private void spawnEnemies() {
+    private void spawnWave() {
         enemies.clear();
-        int rows = 5;
-        int cols = 10;
-        int startX = 50;
-        int startY = 50;
-        int spacingX = 60;
-        int spacingY = 50;
-        
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                int x = startX + col * spacingX;
-                int y = startY + row * spacingY;
-                enemies.add(new Enemy(x, y));
-            }
-        }
+        waveManager.spawnWave(enemies, WIDTH, HEIGHT);
     }
     
-    /**
-     * Game loop chính
-     */
     @Override
     public void actionPerformed(ActionEvent e) {
-        // Luôn cập nhật để MENU cũng xử lý phím ENTER
         update();
         repaint();
     }
     
     /**
-     * Cập nhật game logic
+     * FIXED: Update game logic
      */
     private void update() {
-        // Handle inputs before clearing one-shot keys
         handleInput();
         
         if (currentState == GameState.PLAYING) {
             updateGameObjects();
             checkCollisions();
-            checkGameConditions();
+            checkWaveProgress(); // FIXED: New method
         }
 
-        // Clear just-pressed keys at the end of the frame
         inputHandler.update();
     }
     
-    /**
-     * Xử lý input
-     */
     private void handleInput() {
         if (currentState == GameState.MENU) {
             if (inputHandler.isKeyJustPressed(InputHandler.KEY_ENTER)) {
@@ -192,7 +146,6 @@ public class GamePanel extends JPanel implements ActionListener {
                 resetGame();
             }
         } else if (currentState == GameState.PLAYING) {
-            // Player movement
             if (inputHandler.isKeyPressed(InputHandler.KEY_LEFT)) {
                 player.moveLeft();
             }
@@ -218,24 +171,70 @@ public class GamePanel extends JPanel implements ActionListener {
     }
     
     /**
-     * Cập nhật các game objects
+     * FIXED: Update game objects - QUAN TRỌNG: Gọi checkAndSpawnBoss mỗi frame
      */
     private void updateGameObjects() {
-        // Update player
         player.update();
-        // Update enemies
+        
         for (Enemy enemy : enemies) {
             enemy.update();
+            enemy.shoot(enemyBullets);
         }
         
-        // Update bullets
         updateBullets(playerBullets);
         updateBullets(enemyBullets);
+        updateExplosions();
+        updateItems();
+        
+        // ★★★ CRITICAL FIX: Check và spawn boss mỗi frame ★★★
+        waveManager.checkAndSpawnBoss(enemies, WIDTH, HEIGHT);
     }
     
-    /**
-     * Cập nhật danh sách bullets
-     */
+    private void updateExplosions() {
+        Iterator<Explosion> iterator = explosions.iterator();
+        while (iterator.hasNext()) {
+            Explosion explosion = iterator.next();
+            explosion.update();
+            if (!explosion.isActive()) {
+                iterator.remove();
+            }
+        }
+    }
+    
+    private void updateItems() {
+        Iterator<Item> iterator = items.iterator();
+        while (iterator.hasNext()) {
+            Item item = iterator.next();
+            item.update();
+            if (!item.isActive()) {
+                iterator.remove();
+            }
+        }
+        
+        Iterator<Item> itemIterator = items.iterator();
+        while (itemIterator.hasNext()) {
+            Item item = itemIterator.next();
+            if (item.getBounds().intersects(player.getBounds())) {
+                collectItem(item);
+                item.setActive(false);
+            }
+        }
+    }
+    
+    private void collectItem(Item item) {
+        switch (item.getType()) {
+            case HEALTH:
+                lives++;
+                break;
+            case POWERUP:
+                score += 50;
+                break;
+            case SCORE:
+                score += 100;
+                break;
+        }
+    }
+    
     private void updateBullets(List<Bullet> bullets) {
         Iterator<Bullet> iterator = bullets.iterator();
         while (iterator.hasNext()) {
@@ -247,9 +246,6 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
     
-    /**
-     * Kiểm tra va chạm
-     */
     private void checkCollisions() {
         // Player bullets vs Enemies
         Iterator<Bullet> bulletIterator = playerBullets.iterator();
@@ -258,11 +254,18 @@ public class GamePanel extends JPanel implements ActionListener {
             Iterator<Enemy> enemyIterator = enemies.iterator();
             while (enemyIterator.hasNext()) {
                 Enemy enemy = enemyIterator.next();
-                if (Collision.checkBulletEnemyCollision(bullet, enemy)) {
+                if (enemy.isActive() && Collision.checkBulletEnemyCollision(bullet, enemy)) {
+                    enemy.takeDamage(bullet.getDamage());
                     bullet.setActive(false);
-                    enemy.setActive(false);
-                    score += 10;
-                    Assets.playExplosionSound();
+                    
+                    if (!enemy.isActive()) {
+                        explosions.add(new Explosion(enemy.getX() + enemy.getWidth()/2, 
+                                                   enemy.getY() + enemy.getHeight()/2, 
+                                                   35));
+                        score += enemy.getScoreValue();
+                        spawnRandomItem(enemy.getX() + enemy.getWidth()/2, enemy.getY());
+                        Assets.playExplosionSound();
+                    }
                     break;
                 }
             }
@@ -272,9 +275,29 @@ public class GamePanel extends JPanel implements ActionListener {
         bulletIterator = enemyBullets.iterator();
         while (bulletIterator.hasNext()) {
             Bullet bullet = bulletIterator.next();
-            if (Collision.checkEnemyBulletPlayerCollision(bullet, player)) {
+            if (bullet.isActive() && !player.isInvincible() && 
+                Collision.checkEnemyBulletPlayerCollision(bullet, player)) {
                 bullet.setActive(false);
+                player.takeDamage();
                 lives--;
+                if (lives <= 0) {
+                    currentState = GameState.GAMEOVER;
+                }
+            }
+        }
+        
+        // Enemy vs Player
+        Iterator<Enemy> enemyCollisionIterator = enemies.iterator();
+        while (enemyCollisionIterator.hasNext()) {
+            Enemy enemy = enemyCollisionIterator.next();
+            if (enemy.isActive() && !player.isInvincible() && 
+                Collision.checkEnemyPlayerCollision(enemy, player)) {
+                enemy.setActive(false);
+                player.takeDamage();
+                lives--;
+                explosions.add(new Explosion(enemy.getX() + enemy.getWidth()/2, 
+                                             enemy.getY() + enemy.getHeight()/2, 
+                                             35));
                 if (lives <= 0) {
                     currentState = GameState.GAMEOVER;
                 }
@@ -282,41 +305,49 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
     
-    /**
-     * Kiểm tra điều kiện game
-     */
-    private void checkGameConditions() {
-        // Kiểm tra thắng (hết enemy)
-        boolean allEnemiesDead = true;
-        for (Enemy enemy : enemies) {
-            if (enemy.isActive()) {
-                allEnemiesDead = false;
-                break;
-            }
-        }
+    private void spawnRandomItem(int x, int y) {
+        java.util.Random random = new java.util.Random();
+        double rand = random.nextDouble();
         
-        if (allEnemiesDead) {
-            level++;
-            spawnEnemies();
+        if (rand < 0.3) {
+            Item.ItemType type;
+            double itemRand = random.nextDouble();
+            if (itemRand < 0.4) {
+                type = Item.ItemType.SCORE;
+            } else if (itemRand < 0.7) {
+                type = Item.ItemType.HEALTH;
+            } else {
+                type = Item.ItemType.POWERUP;
+            }
+            items.add(new Item(x, y, type));
         }
     }
     
     /**
-     * Vẽ game
+     * FIXED: Check wave progress và chuyển wave
      */
+    private void checkWaveProgress() {
+        // Kiểm tra wave complete (hết tất cả địch kể cả boss)
+        if (waveManager.isWaveComplete(enemies)) {
+            System.out.println("╔═══════════════════════════╗");
+            System.out.println("║  WAVE " + level + " COMPLETE!      ║");
+            System.out.println("╚═══════════════════════════╝");
+            
+            waveManager.nextWave();
+            level = waveManager.getCurrentWave();
+            spawnWave();
+        }
+    }
+    
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
+        
         if (Assets.backGroundImage != null) {
-            // Vẽ ảnh nền nếu nó đã được load
             g2d.drawImage(Assets.backGroundImage, 0, 0, getWidth(), getHeight(), null);
-        } else {
-            // Nếu không có ảnh, vẽ nền đen
-            g2d.setColor(Color.WHITE);
-            g2d.fillRect(0, 0, getWidth(), getHeight());
         }
-        // Anti-aliasing
+        
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
         switch (currentState) {
@@ -336,9 +367,6 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
     
-    /**
-     * Vẽ menu
-     */
     private void drawMenu(Graphics2D g2d) {
         g2d.setColor(Color.WHITE);
         g2d.setFont(bigFont);
@@ -357,20 +385,13 @@ public class GamePanel extends JPanel implements ActionListener {
         g2d.drawString(startText, x, y);
     }
     
-    /**
-     * Vẽ game
-     */
     private void drawGame(Graphics2D g2d) {
-        // Vẽ player
-
         player.draw(g2d);
         
-        // Vẽ enemies
         for (Enemy enemy : enemies) {
             enemy.draw(g2d);
         }
         
-        // Vẽ bullets
         for (Bullet bullet : playerBullets) {
             bullet.draw(g2d);
         }
@@ -378,30 +399,47 @@ public class GamePanel extends JPanel implements ActionListener {
             bullet.draw(g2d);
         }
         
-        // Vẽ UI
+        for (Explosion explosion : explosions) {
+            explosion.draw(g2d);
+        }
+        
+        for (Item item : items) {
+            item.draw(g2d);
+        }
+        
         drawUI(g2d);
     }
     
-    /**
-     * Vẽ UI
-     */
     private void drawUI(Graphics2D g2d) {
         g2d.setColor(Color.WHITE);
         g2d.setFont(gameFont);
         
-        // Score
         g2d.drawString("Score: " + score, 10, 25);
-        
-        // Lives
         g2d.drawString("Lives: " + lives, 10, 50);
+        g2d.drawString("Wave: " + waveManager.getCurrentWave(), 10, 75);
         
-        // Level
-        g2d.drawString("Level: " + level, 10, 75);
+        int activeEnemies = 0;
+        boolean hasBoss = false;
+        for (Enemy enemy : enemies) {
+            if (enemy.isActive()) {
+                activeEnemies++;
+                if (enemy.getType() == EnemyType.BOSS) {
+                    hasBoss = true;
+                }
+            }
+        }
+        
+        if (hasBoss) {
+            g2d.setColor(Color.ORANGE);
+            g2d.setFont(new Font("Arial", Font.BOLD, 20));
+            g2d.drawString("⚠ BOSS BATTLE! ⚠", 10, 100);
+            g2d.setColor(Color.WHITE);
+            g2d.setFont(gameFont);
+        } else {
+            g2d.drawString("Enemies: " + activeEnemies, 10, 100);
+        }
     }
     
-    /**
-     * Vẽ màn hình pause
-     */
     private void drawPauseScreen(Graphics2D g2d) {
         g2d.setColor(new Color(0, 0, 0, 128));
         g2d.fillRect(0, 0, WIDTH, HEIGHT);
@@ -422,9 +460,6 @@ public class GamePanel extends JPanel implements ActionListener {
         g2d.drawString(resumeText, x, y);
     }
     
-    /**
-     * Vẽ game over
-     */
     private void drawGameOver(Graphics2D g2d) {
         g2d.setColor(Color.WHITE);
         g2d.setFont(bigFont);
