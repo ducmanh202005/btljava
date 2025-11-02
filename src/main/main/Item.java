@@ -6,7 +6,7 @@ import java.awt.*;
  * Lớp Item - các power-up rơi xuống
  */
 public class Item {
-    // Các loại item
+    // Các loại itemå
     public enum ItemType {
         HEALTH,       // Hồi máu (cũ)
         POWERUP,      // Power-up chung (cũ)
