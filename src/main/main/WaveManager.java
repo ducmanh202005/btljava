@@ -174,14 +174,14 @@ public class WaveManager {
                              bossSpeed, bossHP, bossDamage);
         enemies.add(boss);
         
-        System.out.println("╔════════════════════════╗");
-        System.out.println("║   BOSS SPAWNED!!!     ║");
-        System.out.println("╠════════════════════════╣");
-        System.out.println("║ Wave: " + currentWave);
-        System.out.println("║ HP: " + bossHP);
-        System.out.println("║ Damage: " + bossDamage);
-        System.out.println("║ Position: (" + x + ", " + y + ")");
-        System.out.println("╚════════════════════════╝");
+        // System.out.println("╔════════════════════════╗");
+        // System.out.println("║   BOSS SPAWNED!!!     ║");
+        // System.out.println("╠════════════════════════╣");
+        // System.out.println("║ Wave: " + currentWave);
+        // System.out.println("║ HP: " + bossHP);
+        // System.out.println("║ Damage: " + bossDamage);
+        // System.out.println("║ Position: (" + x + ", " + y + ")");
+        // System.out.println("╚════════════════════════╝");
     }
     
     /**

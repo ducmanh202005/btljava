@@ -8,7 +8,6 @@ import javax.swing.*;
 public class Game {
     private JFrame frame;
     private GamePanel gamePanel;
-    
     public Game() {
         initializeFrame();
         setupGamePanel();

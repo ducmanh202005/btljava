@@ -329,9 +329,9 @@ public class GamePanel extends JPanel implements ActionListener {
     private void checkWaveProgress() {
         // Kiểm tra wave complete (hết tất cả địch kể cả boss)
         if (waveManager.isWaveComplete(enemies)) {
-            System.out.println("╔═══════════════════════════╗");
-            System.out.println("║  WAVE " + level + " COMPLETE!      ║");
-            System.out.println("╚═══════════════════════════╝");
+            // System.out.println("╔═══════════════════════════╗");
+            // System.out.println("║  WAVE " + level + " COMPLETE!      ║");
+            // System.out.println("╚═══════════════════════════╝");
             
             waveManager.nextWave();
             level = waveManager.getCurrentWave();
@@ -429,15 +429,15 @@ public class GamePanel extends JPanel implements ActionListener {
             }
         }
         
-        if (hasBoss) {
-            g2d.setColor(Color.ORANGE);
-            g2d.setFont(new Font("Arial", Font.BOLD, 20));
-            g2d.drawString("⚠ BOSS BATTLE! ⚠", 10, 100);
-            g2d.setColor(Color.WHITE);
-            g2d.setFont(gameFont);
-        } else {
-            g2d.drawString("Enemies: " + activeEnemies, 10, 100);
-        }
+        // if (hasBoss) {
+        //     g2d.setColor(Color.ORANGE);
+        //     // g2d.setFont(new Font("Arial", Font.BOLD, 20));
+        //     // g2d.drawString("⚠ BOSS BATTLE! ⚠", 10, 100);
+        //     g2d.setColor(Color.WHITE);
+        //     g2d.setFont(gameFont);
+        // } else {
+        //     g2d.drawString("Enemies: " + activeEnemies, 10, 100);
+        // }
     }
     
     private void drawPauseScreen(Graphics2D g2d) {
