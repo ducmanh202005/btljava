@@ -104,6 +104,7 @@ public class Item {
 
     private void drawPiercing(Graphics2D g2d) {
         // Vẽ icon đạn xuyên (màu cyan)
+
         g2d.setColor(new Color(0, 255, 255));
         g2d.fillOval(x, y, width, height);
 

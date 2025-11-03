@@ -110,11 +110,11 @@ public class Bullet {
     public void draw(Graphics2D g2d) {
         if (piercing) {
             // Đạn xuyên có màu đặc biệt (cyan)
-            if (Assets.bulletImage != null) {
+            if (Assets.bulletPiercingImage != null) {
                 // Vẽ với tint cyan
-                g2d.setColor(new Color(0, 255, 255, 200));
-                g2d.fillRect((int)x - 2, (int)y - 2, width + 4, height + 4);
-                g2d.drawImage(Assets.bulletImage, (int)x, (int)y, width, height, null);
+//                g2d.setColor(new Color(0, 255, 255, 200));
+//                g2d.fillRect((int)x - 2, (int)y - 2, width + 4, height + 4);
+                g2d.drawImage(Assets.bulletPiercingImage, (int)x, (int)y, width, height, null);
             } else {
                 g2d.setColor(Color.CYAN);
                 g2d.fillRect((int)x - 2, (int)y, width + 4, height);

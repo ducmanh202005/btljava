@@ -17,6 +17,7 @@ public class Assets {
     public static BufferedImage bulletImage;
     public static BufferedImage explosionImage;
     public static BufferedImage backGroundImage;
+    public static BufferedImage bulletPiercingImage;
     
     // Âm thanh
     public static Clip shootSound;
@@ -40,15 +41,16 @@ public class Assets {
             // Load hình ảnh từ thư mục resources
 
             playerImage = loadImage("/images/player.png");
-            enemyImage = loadImage("/images/enemy.png");
+            enemyImage = loadImage("/images/enemy2.png");
             try {
-                bossImage = loadImage("/images/boss1.png");
+                bossImage = loadImage("/images/boss3.png");
             } catch (Exception e) {
                 bossImage = enemyImage; // Fallback nếu không có boss image
             }
             bulletImage = loadImage("/images/bullet.png");
             explosionImage = loadImage("/images/explosion.png");
             backGroundImage = loadImage("/images/backGround.png");
+            bulletPiercingImage = loadImage("/images/bulletpiercing.png");
             System.out.println("[DEBUG] ĐÃ LOAD THÀNH CÔNG TẤT CẢ HÌNH ẢNH!");
         } catch (Exception e) {
             System.err.println("Lỗi load hình ảnh: " + e.getMessage());

@@ -75,8 +75,8 @@ public class Enemy {
                 this.maxHP = baseHP;
                 this.damage = baseDamage;
                 this.scoreValue = 10 * level;
-                this.width = 50;
-                this.height = 50;
+                this.width = 70;
+                this.height = 70;
                 break;
             case FAST:
                 this.speed = baseSpeed * 1.8;
