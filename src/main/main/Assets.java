@@ -18,7 +18,12 @@ public class Assets {
     public static BufferedImage explosionImage;
     public static BufferedImage backGroundImage;
     public static BufferedImage bulletPiercingImage;
-    
+    public static BufferedImage hpItemImage;
+    public static BufferedImage shieldItemImage;
+    public static BufferedImage piercingItemImage;
+    public static BufferedImage scoreItemImage;
+    public static BufferedImage tripleItemImage;
+    public static BufferedImage powerItemImage;
     // Âm thanh
     public static Clip shootSound;
     public static Clip explosionSound;
@@ -41,16 +46,22 @@ public class Assets {
             // Load hình ảnh từ thư mục resources
 
             playerImage = loadImage("/images/player.png");
-            enemyImage = loadImage("/images/enemy2.png");
+            enemyImage = loadImage("/images/enemy3.png");
             try {
                 bossImage = loadImage("/images/boss3.png");
             } catch (Exception e) {
                 bossImage = enemyImage; // Fallback nếu không có boss image
             }
-            bulletImage = loadImage("/images/bullet.png");
+            bulletImage = loadImage("/images/bulletboss3.png");
             explosionImage = loadImage("/images/explosion.png");
-            backGroundImage = loadImage("/images/backGround.png");
+            backGroundImage = loadImage("/images/backGround3.png");
             bulletPiercingImage = loadImage("/images/bulletpiercing.png");
+            hpItemImage = loadImage("/images/hpitem.png");
+            shieldItemImage = loadImage("/images/shielditem.png");
+            piercingItemImage = loadImage("/images/piercingitem.png");
+            scoreItemImage = loadImage("/images/scoreitem.png");
+            tripleItemImage = loadImage("/images/tripleitem.png");
+            powerItemImage = loadImage("/images/poweritem.png");
             System.out.println("[DEBUG] ĐÃ LOAD THÀNH CÔNG TẤT CẢ HÌNH ẢNH!");
         } catch (Exception e) {
             System.err.println("Lỗi load hình ảnh: " + e.getMessage());

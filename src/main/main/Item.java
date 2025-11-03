@@ -76,6 +76,10 @@ public class Item {
 
     private void drawTripleShot(Graphics2D g2d) {
         // Vẽ icon bắn 3 tia (màu vàng)
+        if(Assets.tripleItemImage!=null) {
+            g2d.drawImage(Assets.tripleItemImage, x, y, width, height, null);
+            return;
+        }
         g2d.setColor(new Color(255, 215, 0));
         g2d.fillOval(x, y, width, height);
 
@@ -104,7 +108,10 @@ public class Item {
 
     private void drawPiercing(Graphics2D g2d) {
         // Vẽ icon đạn xuyên (màu cyan)
-
+        if(Assets.piercingItemImage!=null) {
+            g2d.drawImage(Assets.piercingItemImage, x, y, width, height, null);
+            return;
+        }
         g2d.setColor(new Color(0, 255, 255));
         g2d.fillOval(x, y, width, height);
 
@@ -123,6 +130,10 @@ public class Item {
 
     private void drawShield(Graphics2D g2d) {
         // Vẽ icon khiên (màu xanh dương)
+        if(Assets.shieldItemImage!=null) {
+            g2d.drawImage(Assets.shieldItemImage, x, y, width, height, null);
+            return;
+        }
         g2d.setColor(new Color(100, 150, 255));
         g2d.fillOval(x, y, width, height);
 
@@ -170,6 +181,10 @@ public class Item {
 
     private void drawHealth(Graphics2D g2d) {
         // Vẽ icon hồi máu (màu đỏ)
+        if(Assets.hpItemImage!=null) {
+            g2d.drawImage(Assets.hpItemImage, x, y, width, height, null);
+            return;
+        }
         g2d.setColor(Color.RED);
         g2d.fillOval(x, y, width, height);
 
@@ -187,6 +202,10 @@ public class Item {
 
     private void drawPowerUp(Graphics2D g2d) {
         // Vẽ icon power-up chung (màu tím)
+        if(Assets.powerItemImage!=null) {
+            g2d.drawImage(Assets.powerItemImage, x, y, width, height, null);
+            return;
+        }
         g2d.setColor(new Color(200, 0, 255));
         g2d.fillOval(x, y, width, height);
 
@@ -210,6 +229,10 @@ public class Item {
 
     private void drawScore(Graphics2D g2d) {
         // Vẽ icon điểm (màu vàng kim)
+        if(Assets.scoreItemImage!=null) {
+            g2d.drawImage(Assets.scoreItemImage, x, y, width, height, null);
+            return;
+        }
         g2d.setColor(new Color(255, 215, 0));
         g2d.fillOval(x, y, width, height);
 
