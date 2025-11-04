@@ -7,8 +7,8 @@ import java.awt.*;
  */
 public class Bullet {
     private double x, y; // Dùng double cho smooth movement
-    private int width = 20;
-    private int height = 25;
+    private int width = 25;
+    private int height = 35;
     private int speed = 7; // Tốc độ cơ bản
     private int direction; // 1 = xuống, -1 = lên
     private boolean active = true;
