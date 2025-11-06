@@ -46,15 +46,15 @@ public class Assets {
             // Load hình ảnh từ thư mục resources
 
             playerImage = loadImage("/images/player.png");
-            enemyImage = loadImage("/images/enemy3.png");
+            enemyImage = loadImage("/images/enemy4.png");
             try {
-                bossImage = loadImage("/images/boss3.png");
+                bossImage = loadImage("/images/boss5.png");
             } catch (Exception e) {
                 bossImage = enemyImage; // Fallback nếu không có boss image
             }
-            bulletImage = loadImage("/images/bulletboss3.png");
+            bulletImage = loadImage("/images/bulletenemy4.png");
             explosionImage = loadImage("/images/explosion.png");
-            backGroundImage = loadImage("/images/backGround3.png");
+            backGroundImage = loadImage("/images/backGround5.png");
             bulletPiercingImage = loadImage("/images/bulletpiercing.png");
             hpItemImage = loadImage("/images/hpitem.png");
             shieldItemImage = loadImage("/images/shielditem.png");
