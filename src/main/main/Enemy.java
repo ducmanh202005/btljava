@@ -1,11 +1,12 @@
 package main;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Random;
 
 /**
- * Enemy - FIXED: Boss to hơn, không có viền trắng
+ * Enemy - FIXED với wave-specific images và bullets
  */
 public class Enemy {
     private int x, y;
@@ -14,39 +15,44 @@ public class Enemy {
     private double speed;
     private boolean active = true;
     private int direction = 1;
-    
+
     private EnemyType type;
     private int level;
     private int maxHP;
     private int currentHP;
     private int damage;
     private int scoreValue;
-    
+
+    //  THÊM BIẾN enemyVariant
+    private int enemyVariant;
+
     private int shootCooldown = 0;
     private int shootInterval;
     private Random random;
-    
+
     private int moveDirectionX = 1;
     private int moveDirectionY = 0;
     private int randomMoveTimer = 0;
     private static final int RANDOM_MOVE_INTERVAL = 60;
-    
+
     private int bossShootAngle = 0;
     private int bossMovePattern = 0;
-    
-    public Enemy(int x, int y, EnemyType type, int level, 
-                 double baseSpeed, int baseHP, int baseDamage) {
+
+    //  CONSTRUCTOR ĐÃ SỬA - THÊM enemyVariant
+    public Enemy(int x, int y, EnemyType type, int level,
+                 double baseSpeed, int baseHP, int baseDamage, int enemyVariant) {
         this.x = x;
         this.y = y;
         this.type = type;
         this.level = level;
+        this.enemyVariant = enemyVariant; //  LƯU GIÁ TRỊ
         this.random = new Random();
-        
+
         changeRandomDirection();
         randomMoveTimer = random.nextInt(RANDOM_MOVE_INTERVAL);
-        
+
         calculateStats(baseSpeed, baseHP, baseDamage);
-        
+
         switch (type) {
             case BOSS:
                 shootInterval = Math.max(15, 120 - (level * 4));
@@ -64,10 +70,7 @@ public class Enemy {
         int cooldownRange = level == 1 ? shootInterval / 2 : shootInterval / 3;
         shootCooldown = random.nextInt(cooldownRange) + (level == 1 ? shootInterval / 3 : 0);
     }
-    
-    /**
-     * ★★★ FIXED: Boss TO HƠN (120x120) ★★★
-     */
+
     private void calculateStats(double baseSpeed, int baseHP, int baseDamage) {
         switch (type) {
             case NORMAL:
@@ -99,60 +102,60 @@ public class Enemy {
                 this.maxHP = baseHP * 2 + (level * 2);
                 this.damage = baseDamage * 4 + (level / 2);
                 this.scoreValue = 200 * level;
-                this.width = 250;  
-                this.height = 250; 
+                this.width = 250;
+                this.height = 250;
                 break;
         }
-        
+
         this.currentHP = maxHP;
     }
-    
+
     public void update() {
         if (!active) return;
         move();
         shootCooldown--;
     }
-    
+
     private void move() {
         if (type == EnemyType.BOSS) {
             bossMovePattern++;
             double patternX = Math.sin(bossMovePattern * 0.05) * 2;
             x += (int)(speed * direction) + (int)patternX;
-            
+
             if (bossMovePattern % 60 == 0) {
                 y += 1;
             }
-            
+
             if (x <= 0 || x >= GamePanel.WIDTH - width) {
                 direction *= -1;
             }
-            
+
             if (x < 0) x = 0;
             if (x > GamePanel.WIDTH - width) x = GamePanel.WIDTH - width;
             if (y > GamePanel.HEIGHT - 150) y = GamePanel.HEIGHT - 150;
         } else {
             randomMoveTimer++;
-            
+
             if (randomMoveTimer >= RANDOM_MOVE_INTERVAL) {
                 randomMoveTimer = 0;
                 changeRandomDirection();
             }
-            
+
             double moveX = speed * moveDirectionX;
             double moveY = speed * 0.3 * moveDirectionY;
-            
+
             if (Math.abs(moveX) >= 1.0) {
                 x += (int)moveX;
             } else if (moveDirectionX != 0 && randomMoveTimer % 2 == 0) {
                 x += moveDirectionX;
             }
-            
+
             if (Math.abs(moveY) >= 0.5) {
                 y += (int)moveY;
             } else if (moveDirectionY != 0 && randomMoveTimer % 3 == 0) {
                 y += moveDirectionY;
             }
-            
+
             if (x <= 0) {
                 x = 0;
                 moveDirectionX = 1;
@@ -160,7 +163,7 @@ public class Enemy {
                 x = GamePanel.WIDTH - width;
                 moveDirectionX = -1;
             }
-            
+
             if (y <= 0) {
                 y = 0;
                 moveDirectionY = 1;
@@ -170,7 +173,7 @@ public class Enemy {
             }
         }
     }
-    
+
     private void changeRandomDirection() {
         moveDirectionX = random.nextBoolean() ? 1 : -1;
         int rand = random.nextInt(3);
@@ -182,7 +185,7 @@ public class Enemy {
             moveDirectionY = 0;
         }
     }
-    
+
     public void shoot(List<Bullet> enemyBullets) {
         if (shootCooldown <= 0) {
             if (type == EnemyType.BOSS) {
@@ -193,37 +196,42 @@ public class Enemy {
             shootCooldown = shootInterval;
         }
     }
-    
+
+    /**
+     *  FIXED: Bắn đạn với enemyVariant thay vì level
+     */
     private void shootNormalPattern(List<Bullet> enemyBullets) {
         int bulletX = x + width / 2 - 10;
         int bulletY = y + height;
-        
+
         int numBullets = 1;
         if (level >= 8) numBullets = 2;
         if (level >= 13) numBullets = 3;
-        
+
         int bulletSpeed;
         if (level == 1) {
             bulletSpeed = 5;
         } else {
             bulletSpeed = 6 + ((level - 2) / 2);
         }
-        
+
+        boolean isBoss = (type == EnemyType.BOSS);
+
         if (numBullets == 1) {
-            Bullet bullet = new Bullet(bulletX, bulletY, 1, damage);
+            Bullet bullet = new Bullet(bulletX, bulletY, 1, damage, enemyVariant, isBoss);
             bullet.setSpeed(bulletSpeed);
             enemyBullets.add(bullet);
         } else if (numBullets == 2) {
-            Bullet bullet1 = new Bullet(bulletX - 15, bulletY, 1, damage);
-            Bullet bullet2 = new Bullet(bulletX + 15, bulletY, 1, damage);
+            Bullet bullet1 = new Bullet(bulletX - 15, bulletY, 1, damage, enemyVariant, isBoss);
+            Bullet bullet2 = new Bullet(bulletX + 15, bulletY, 1, damage, enemyVariant, isBoss);
             bullet1.setSpeed(bulletSpeed);
             bullet2.setSpeed(bulletSpeed);
             enemyBullets.add(bullet1);
             enemyBullets.add(bullet2);
         } else {
-            Bullet bullet1 = new Bullet(bulletX - 20, bulletY, 1, damage);
-            Bullet bullet2 = new Bullet(bulletX, bulletY, 1, damage);
-            Bullet bullet3 = new Bullet(bulletX + 20, bulletY, 1, damage);
+            Bullet bullet1 = new Bullet(bulletX - 20, bulletY, 1, damage, enemyVariant, isBoss);
+            Bullet bullet2 = new Bullet(bulletX, bulletY, 1, damage, enemyVariant, isBoss);
+            Bullet bullet3 = new Bullet(bulletX + 20, bulletY, 1, damage, enemyVariant, isBoss);
             bullet1.setSpeed(bulletSpeed);
             bullet2.setSpeed(bulletSpeed);
             bullet3.setSpeed(bulletSpeed);
@@ -232,53 +240,56 @@ public class Enemy {
             enemyBullets.add(bullet3);
         }
     }
-    
+
+    /**
+     *  FIXED: Boss bắn circular với enemyVariant
+     */
     private void shootCircularPattern(List<Bullet> enemyBullets) {
         int centerX = x + width / 2;
         int centerY = y + height / 2;
-        
+
         int numBullets = 8 + (level / 2);
         if (numBullets > 16) numBullets = 16;
-        
+
         bossShootAngle += 10;
         if (bossShootAngle >= 360) bossShootAngle = 0;
-        
+
         double baseBulletSpeed = 3.0 + (level * 0.3);
-        
+
         for (int i = 0; i < numBullets; i++) {
             double angle = (Math.PI * 2 * i / numBullets) + (bossShootAngle * Math.PI / 180);
-            
+
             int bulletX = centerX + (int)(Math.cos(angle) * 30);
             int bulletY = centerY + (int)(Math.sin(angle) * 30);
-            
-            Bullet bullet = new Bullet(bulletX, bulletY, 1, damage);
+
+            Bullet bullet = new Bullet(bulletX, bulletY, 1, damage, enemyVariant, true);
             bullet.setVelocity(Math.cos(angle) * baseBulletSpeed, Math.sin(angle) * baseBulletSpeed);
             enemyBullets.add(bullet);
         }
     }
-    
+
     public void takeDamage(int damage) {
         currentHP -= damage;
         if (currentHP <= 0) {
             active = false;
         }
     }
-    
+
     /**
-     * ★★★ FIXED: Loại bỏ viền trắng của boss image ★★★
+     *  FIXED: Vẽ enemy/boss với enemyVariant
      */
     public void draw(Graphics2D g2d) {
         if (!active) return;
-        
+
+        BufferedImage img = null;
+
         if (type == EnemyType.BOSS) {
-            if (Assets.bossImage != null) {
-                // ★★★ FIX: Đảm bảo PNG trong suốt hiển thị đúng ★★★
+            img = Assets.getBossImage(enemyVariant); // ⭐ ĐÃ SỬA
+
+            if (img != null) {
                 Composite oldComposite = g2d.getComposite();
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-                
-                // Vẽ boss image (PNG sẽ tự động trong suốt nếu có alpha channel)
-                g2d.drawImage(Assets.bossImage, x, y, width, height, null);
-                
+                g2d.drawImage(img, x, y, width, height, null);
                 g2d.setComposite(oldComposite);
             } else {
                 // Fallback
@@ -288,23 +299,27 @@ public class Enemy {
                 g2d.setStroke(new java.awt.BasicStroke(3));
                 g2d.drawRect(x, y, width, height);
             }
-        } else if (Assets.enemyImage != null) {
-            g2d.drawImage(Assets.enemyImage, x, y, width, height, null);
         } else {
-            g2d.setColor(getEnemyColor());
-            g2d.fillRect(x, y, width, height);
+            img = Assets.getEnemyImage(enemyVariant); // ⭐ ĐÃ SỬA
+
+            if (img != null) {
+                g2d.drawImage(img, x, y, width, height, null);
+            } else {
+                g2d.setColor(getEnemyColor());
+                g2d.fillRect(x, y, width, height);
+            }
         }
-        
+
         if (maxHP > 1) {
             drawHPBar(g2d);
         }
-        
+
         if (shootCooldown < 10) {
             g2d.setColor(Color.YELLOW);
             g2d.fillOval(x + width - 8, y + height - 8, 8, 8);
         }
     }
-    
+
     private Color getEnemyColor() {
         switch (type) {
             case NORMAL: return Color.RED;
@@ -314,19 +329,16 @@ public class Enemy {
             default: return Color.RED;
         }
     }
-    
-    /**
-     * Vẽ HP bar - điều chỉnh cho boss to hơn
-     */
+
     private void drawHPBar(Graphics2D g2d) {
         int barWidth = width;
-        int barHeight = type == EnemyType.BOSS ? 8 : 6; // Boss HP bar cao hơn
+        int barHeight = type == EnemyType.BOSS ? 8 : 6;
         int barX = x;
-        int barY = y - (type == EnemyType.BOSS ? 15 : 12); // Boss HP bar xa hơn
-        
+        int barY = y - (type == EnemyType.BOSS ? 15 : 12);
+
         g2d.setColor(Color.BLACK);
         g2d.fillRect(barX, barY, barWidth, barHeight);
-        
+
         double hpPercent = (double)currentHP / maxHP;
         Color hpColor;
         if (hpPercent > 0.6) {
@@ -336,35 +348,36 @@ public class Enemy {
         } else {
             hpColor = Color.RED;
         }
-        
+
         g2d.setColor(hpColor);
         int currentWidth = (int)(barWidth * hpPercent);
         g2d.fillRect(barX, barY, currentWidth, barHeight);
-        
+
         g2d.setColor(Color.WHITE);
         g2d.drawRect(barX, barY, barWidth, barHeight);
-        
+
         if (type == EnemyType.BOSS) {
-            g2d.setFont(new Font("Arial", Font.BOLD, 12)); // Font lớn hơn cho boss
+            g2d.setFont(new Font("Arial", Font.BOLD, 12));
             String hpText = currentHP + "/" + maxHP;
             FontMetrics fm = g2d.getFontMetrics();
             int textX = barX + (barWidth - fm.stringWidth(hpText)) / 2;
             g2d.drawString(hpText, textX, barY - 3);
         }
     }
-    
+
     public Rectangle getBounds() {
         return new Rectangle(x, y, width, height);
     }
-    
+
     public boolean isActive() {
         return active;
     }
-    
+
     public void setActive(boolean active) {
         this.active = active;
     }
-    
+
+    // Getters
     public int getX() { return x; }
     public int getY() { return y; }
     public int getWidth() { return width; }
@@ -377,4 +390,7 @@ public class Enemy {
     public int getDamage() { return damage; }
     public int getDirection() { return direction; }
     public void setDirection(int dir) { this.direction = dir; }
+
+    //  THÊM GETTER
+    public int getEnemyVariant() { return enemyVariant; }
 }

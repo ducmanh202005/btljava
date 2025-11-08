@@ -1,7 +1,6 @@
 package main;
 
 import java.awt.*;
-import java.awt.AlphaComposite;
 
 /**
  * Lớp Player - tàu người chơi với power-ups

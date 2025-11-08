@@ -1,22 +1,24 @@
 package main;
 
-import javax.imageio.ImageIO;
-import javax.sound.sampled.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import javax.imageio.ImageIO;
+import javax.sound.sampled.*;
 
 /**
- * Lớp quản lý tài nguyên game (hình ảnh, âm thanh)
+ * Lớp quản lý tài nguyên game - UPDATED với multiple enemies và bosses
  */
 public class Assets {
-    // Hình ảnh
+    // Hình ảnh player và chung
     public static BufferedImage playerImage;
-    public static BufferedImage enemyImage;
-    public static BufferedImage bossImage;
     public static BufferedImage bulletImage;
     public static BufferedImage explosionImage;
     public static BufferedImage backGroundImage;
+    
+    // Power-up items
     public static BufferedImage bulletPiercingImage;
     public static BufferedImage hpItemImage;
     public static BufferedImage shieldItemImage;
@@ -24,6 +26,14 @@ public class Assets {
     public static BufferedImage scoreItemImage;
     public static BufferedImage tripleItemImage;
     public static BufferedImage powerItemImage;
+    
+    // Maps cho enemies, bosses và bullets theo wave
+    public static Map<Integer, BufferedImage> enemyImages = new HashMap<>();
+    public static Map<Integer, BufferedImage> bossImages = new HashMap<>();
+    public static Map<Integer, BufferedImage> enemyBulletImages = new HashMap<>();
+    public static Map<Integer, BufferedImage> bossBulletImages = new HashMap<>();
+    public static Map<Integer, BufferedImage> backgroundImages = new HashMap<>();
+    
     // Âm thanh
     public static Clip shootSound;
     public static Clip explosionSound;
@@ -41,20 +51,15 @@ public class Assets {
      * Load hình ảnh
      */
     private static void loadImages() {
-
         try {
-            // Load hình ảnh từ thư mục resources
-
+            // Load hình ảnh chung
             playerImage = loadImage("/images/player.png");
-            enemyImage = loadImage("/images/enemy4.png");
-            try {
-                bossImage = loadImage("/images/boss5.png");
-            } catch (Exception e) {
-                bossImage = enemyImage; // Fallback nếu không có boss image
-            }
-            bulletImage = loadImage("/images/bulletenemy4.png");
+            bulletImage = loadImage("/images/bullet.png");
             explosionImage = loadImage("/images/explosion.png");
+            // Load background mặc định (fallback)
             backGroundImage = loadImage("/images/backGround5.png");
+            
+            // Load power-up items
             bulletPiercingImage = loadImage("/images/bulletpiercing.png");
             hpItemImage = loadImage("/images/hpitem.png");
             shieldItemImage = loadImage("/images/shielditem.png");
@@ -62,10 +67,60 @@ public class Assets {
             scoreItemImage = loadImage("/images/scoreitem.png");
             tripleItemImage = loadImage("/images/tripleitem.png");
             powerItemImage = loadImage("/images/poweritem.png");
+            
+            // Load enemies (1-5)
+            for (int i = 1; i <= 5; i++) {
+                try {
+                    enemyImages.put(i, loadImage("/images/enemy" + i + ".png"));
+                    System.out.println("[DEBUG] Loaded enemy" + i + ".png");
+                } catch (Exception e) {
+                    System.err.println("Không tìm thấy enemy" + i + ".png");
+                }
+            }
+            
+            // Load bosses (1-5)
+            for (int i = 1; i <= 5; i++) {
+                try {
+                    bossImages.put(i, loadImage("/images/boss" + i + ".png"));
+                    System.out.println("[DEBUG] Loaded boss" + i + ".png");
+                } catch (Exception e) {
+                    System.err.println("Không tìm thấy boss" + i + ".png");
+                }
+            }
+            
+            // Load enemy bullets (1-5)
+            for (int i = 1; i <= 5; i++) {
+                try {
+                    enemyBulletImages.put(i, loadImage("/images/bulletenemy" + i + ".png"));
+                    System.out.println("[DEBUG] Loaded bulletenemy" + i + ".png");
+                } catch (Exception e) {
+                    System.err.println("Không tìm thấy bulletenemy" + i + ".png");
+                }
+            }
+            
+            // Load boss bullets (1-5)
+            for (int i = 1; i <= 5; i++) {
+                try {
+                    bossBulletImages.put(i, loadImage("/images/bulletboss" + i + ".png"));
+                    System.out.println("[DEBUG] Loaded bulletboss" + i + ".png");
+                } catch (Exception e) {
+                    System.err.println("Không tìm thấy bulletboss" + i + ".png");
+                }
+            }
+            
+            // Load backgrounds (1-5)
+            for (int i = 1; i <= 5; i++) {
+                try {
+                    backgroundImages.put(i, loadImage("/images/backGround" + i + ".png"));
+                    System.out.println("[DEBUG] Loaded backGround" + i + ".png");
+                } catch (Exception e) {
+                    System.err.println("Không tìm thấy backGround" + i + ".png");
+                }
+            }
+            
             System.out.println("[DEBUG] ĐÃ LOAD THÀNH CÔNG TẤT CẢ HÌNH ẢNH!");
         } catch (Exception e) {
             System.err.println("Lỗi load hình ảnh: " + e.getMessage());
-            // Tạo hình ảnh mặc định nếu không load được
             createDefaultImages();
         }
     }
@@ -113,14 +168,50 @@ public class Assets {
      * Tạo hình ảnh mặc định nếu không load được file
      */
     private static void createDefaultImages() {
-        // Tạo hình ảnh mặc định đơn giản
         playerImage = new BufferedImage(40, 30, BufferedImage.TYPE_INT_RGB);
-        enemyImage = new BufferedImage(30, 30, BufferedImage.TYPE_INT_RGB);
-        bulletImage = new BufferedImage(4, 10, BufferedImage.TYPE_INT_RGB);
         explosionImage = new BufferedImage(30, 30, BufferedImage.TYPE_INT_RGB);
-        
-        // Vẽ hình đơn giản (có thể tùy chỉnh sau)
-        // Ở đây chỉ tạo hình vuông đơn giản
+    }
+    
+    /**
+     * Lấy hình ảnh enemy theo wave (cycle 1-5)
+     */
+    public static BufferedImage getEnemyImage(int wave) {
+        int imageIndex = ((wave - 1) % 5) + 1; // Cycle 1-5
+        return enemyImages.getOrDefault(imageIndex, null);
+    }
+    
+    /**
+     * Lấy hình ảnh boss theo wave (cycle 1-5)
+     */
+    public static BufferedImage getBossImage(int wave) {
+        int imageIndex = ((wave - 1) % 5) + 1; // Cycle 1-5
+        return bossImages.getOrDefault(imageIndex, null);
+    }
+    
+    /**
+     * Lấy hình ảnh đạn enemy theo wave (cycle 1-5)
+     */
+    public static BufferedImage getEnemyBulletImage(int wave) {
+        int imageIndex = ((wave - 1) % 5) + 1; // Cycle 1-5
+        return enemyBulletImages.getOrDefault(imageIndex, null);
+    }
+    
+    /**
+     * Lấy hình ảnh đạn boss theo wave (cycle 1-5)
+     */
+    public static BufferedImage getBossBulletImage(int wave) {
+        int imageIndex = ((wave - 1) % 5) + 1; // Cycle 1-5
+        return bossBulletImages.getOrDefault(imageIndex, null);
+    }
+    
+    /**
+     * Lấy hình ảnh background theo wave (cycle 1-5)
+     */
+    public static BufferedImage getBackgroundImage(int wave) {
+        int imageIndex = ((wave - 1) % 5) + 1; // Cycle 1-5
+        BufferedImage bg = backgroundImages.getOrDefault(imageIndex, null);
+        // Fallback về backGroundImage nếu không tìm thấy
+        return bg != null ? bg : backGroundImage;
     }
     
     /**
@@ -161,4 +252,3 @@ public class Assets {
         }
     }
 }
-

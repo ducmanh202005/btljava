@@ -1,6 +1,7 @@
 package main;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -107,6 +108,8 @@ public class GamePanel extends JPanel implements ActionListener {
         items.clear();
         waveManager = new WaveManager();
         player.reset();
+        // Cập nhật background cho wave đầu tiên
+        updateBackgroundForWave();
         spawnWave();
     }
 
@@ -409,7 +412,21 @@ public class GamePanel extends JPanel implements ActionListener {
         if (waveManager.isWaveComplete(enemies)) {
             waveManager.nextWave();
             level = waveManager.getCurrentWave();
+            // Cập nhật background theo wave mới
+            updateBackgroundForWave();
             spawnWave();
+        }
+    }
+    
+    /**
+     * Cập nhật background theo wave hiện tại
+     */
+    private void updateBackgroundForWave() {
+        int currentWave = waveManager.getCurrentWave();
+        BufferedImage newBackground = Assets.getBackgroundImage(currentWave);
+        if (newBackground != null) {
+            Assets.backGroundImage = newBackground;
+            System.out.println("[BACKGROUND] Đổi background cho wave " + currentWave);
         }
     }
 

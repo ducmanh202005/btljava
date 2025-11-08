@@ -1,28 +1,33 @@
 package main;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 /**
- * Lớp Bullet - viên đạn với power-ups và hỗ trợ boss patterns
+ * Lớp Bullet - UPDATED với wave-specific bullets
  */
 public class Bullet {
-    private double x, y; // Dùng double cho smooth movement
+    private double x, y;
     private int width = 25;
     private int height = 35;
-    private int speed = 7; // Tốc độ cơ bản
+    private int speed = 7;
     private int direction; // 1 = xuống, -1 = lên
     private boolean active = true;
     private int damage = 1;
 
     // Power-up properties
-    private boolean piercing = false; // Đạn xuyên không bị xóa khi trúng
-    private int hitCount = 0; // Số lần trúng (cho đạn xuyên)
-    private static final int MAX_PIERCING_HITS = 3; // Đạn xuyên tối đa 3 lần
+    private boolean piercing = false;
+    private int hitCount = 0;
+    private static final int MAX_PIERCING_HITS = 3;
 
     // Cho circular shooting của Boss
     private double velX = 0;
     private double velY = 0;
     private boolean useVelocity = false;
+    
+    // ★ NEW: Wave và Boss tracking
+    private int wave = 1;
+    private boolean isBoss = false;
 
     /**
      * Constructor cơ bản (tương thích code cũ)
@@ -44,10 +49,22 @@ public class Bullet {
         this.damage = damage;
         this.piercing = false;
     }
+    
+    /**
+     * ★ NEW: Constructor với wave và boss info (cho enemy/boss bullets)
+     */
+    public Bullet(int x, int y, int direction, int damage, int wave, boolean isBoss) {
+        this.x = x;
+        this.y = y;
+        this.direction = direction;
+        this.damage = damage;
+        this.wave = wave;
+        this.isBoss = isBoss;
+        this.piercing = false;
+    }
 
     /**
      * Constructor cho player với power-ups (triple shot + piercing)
-     * speedX: tốc độ ngang cho triple shot (âm = trái, dương = phải)
      */
     public Bullet(int x, int y, int directionY, int speedX, boolean piercing) {
         this.x = x;
@@ -55,10 +72,9 @@ public class Bullet {
         this.direction = directionY;
         this.piercing = piercing;
 
-        // Tính velocity từ speedX và direction
         this.velX = speedX;
         this.velY = directionY * speed;
-        this.useVelocity = (speedX != 0); // Chỉ dùng velocity nếu có speedX
+        this.useVelocity = (speedX != 0);
     }
 
     /**
@@ -71,23 +87,28 @@ public class Bullet {
     }
 
     /**
-     * Set tốc độ đạn (tăng theo wave)
+     * Set tốc độ đạn
      */
     public void setSpeed(int speed) {
         this.speed = speed;
     }
+    
+    /**
+     * ★ Set wave info (dùng khi tạo bullet từ constructor cũ)
+     */
+    public void setWaveInfo(int wave, boolean isBoss) {
+        this.wave = wave;
+        this.isBoss = isBoss;
+    }
 
     public void update() {
         if (useVelocity) {
-            // Di chuyển theo velocity (cho Boss circular pattern hoặc triple shot)
             x += velX;
             y += velY;
         } else {
-            // Di chuyển bình thường
             y += speed * direction;
         }
 
-        // Deactivate nếu ra khỏi màn hình
         if (y < -50 || y > GamePanel.HEIGHT + 50 || x < -50 || x > GamePanel.WIDTH + 50) {
             active = false;
         }
@@ -100,40 +121,50 @@ public class Bullet {
         if (piercing) {
             hitCount++;
             if (hitCount >= MAX_PIERCING_HITS) {
-                active = false; // Đạn xuyên hết hiệu lực sau 3 lần trúng
+                active = false;
             }
         } else {
-            active = false; // Đạn thường biến mất ngay
+            active = false;
         }
     }
 
     public void draw(Graphics2D g2d) {
         if (piercing) {
-            // Đạn xuyên có màu đặc biệt (cyan)
+            // Đạn xuyên (player)
             if (Assets.bulletPiercingImage != null) {
-                // Vẽ với tint cyan
-//                g2d.setColor(new Color(0, 255, 255, 200));
-//                g2d.fillRect((int)x - 2, (int)y - 2, width + 4, height + 4);
                 g2d.drawImage(Assets.bulletPiercingImage, (int)x, (int)y, width, height, null);
             } else {
                 g2d.setColor(Color.CYAN);
                 g2d.fillRect((int)x - 2, (int)y, width + 4, height);
-
-                // Vẽ hiệu ứng sáng
                 g2d.setColor(new Color(100, 255, 255, 150));
                 g2d.fillRect((int)x - 1, (int)y, width + 2, height);
             }
-
-            // Vẽ trail effect
             g2d.setColor(new Color(0, 200, 255, 100));
             g2d.fillRect((int)x, (int)y + height, width, 5);
+        } else if (direction > 0) {
+            // ★ Đạn enemy/boss (direction > 0 = đi xuống)
+            BufferedImage bulletImg = null;
+            
+            if (isBoss) {
+                bulletImg = Assets.getBossBulletImage(wave);
+            } else {
+                bulletImg = Assets.getEnemyBulletImage(wave);
+            }
+            
+            if (bulletImg != null) {
+                g2d.drawImage(bulletImg, (int)x, (int)y, width, height, null);
+            } else {
+                // Fallback color
+                g2d.setColor(isBoss ? Color.ORANGE : Color.RED);
+                g2d.fillRect((int)x, (int)y, width, height);
+            }
         } else {
-            // Đạn thường
+            // Đạn player thường (direction < 0 = đi lên)
             if (Assets.bulletImage != null) {
                 g2d.drawImage(Assets.bulletImage, (int)x, (int)y, width, height, null);
             } else {
-                g2d.setColor(useVelocity && direction > 0 ? Color.ORANGE : Color.YELLOW);
-                // Boss bullets màu cam (direction > 0 và useVelocity)
+                // Fallback color nếu không load được hình ảnh
+                g2d.setColor(Color.YELLOW);
                 g2d.fillRect((int)x, (int)y, width, height);
             }
         }
@@ -162,4 +193,6 @@ public class Bullet {
     public int getHeight() { return height; }
     public int getDirection() { return direction; }
     public int getDamage() { return damage; }
+    public int getWave() { return wave; }
+    public boolean isBossBullet() { return isBoss; }
 }
