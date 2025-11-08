@@ -8,8 +8,8 @@ import java.awt.image.BufferedImage;
  */
 public class Bullet {
     private double x, y;
-    private int width = 25;
-    private int height = 35;
+    private int width = 20;
+    private int height = 30;
     private int speed = 7;
     private int direction; // 1 = xuống, -1 = lên
     private boolean active = true;
