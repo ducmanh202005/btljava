@@ -3,7 +3,7 @@ package main;
 import java.awt.*;
 
 /**
- * Lớp Player - tàu người chơi với power-ups
+ * Lớp Player - tàu người chơi với power-ups và âm thanh
  */
 public class Player {
     private int x, y;
@@ -231,7 +231,7 @@ public class Player {
     }
 
     /**
-     * Bắn đạn với power-ups
+     * ⭐ UPDATED: Bắn đạn với power-ups và âm thanh
      */
     public void shoot(java.util.List<Bullet> bullets) {
         if (shootCooldown > 0) {
@@ -247,13 +247,16 @@ public class Player {
             bullets.add(new Bullet(centerX - 15, bulletY, -1, -3, piercing)); // Chéo trái
             bullets.add(new Bullet(centerX + 15, bulletY, -1, 3, piercing)); // Chéo phải
         } else {
-            // Bắn 1 viên bình thường (tương thích với constructor cũ)
+            // Bắn 1 viên bình thường
             if (piercing) {
                 bullets.add(new Bullet(centerX, bulletY, -1, 0, piercing));
             } else {
                 bullets.add(new Bullet(centerX, bulletY, -1)); // Constructor cũ
             }
         }
+
+        // ⭐ Phát âm thanh bắn
+        Assets.playShootSound();
 
         shootCooldown = SHOOT_DELAY;
     }

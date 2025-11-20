@@ -1,6 +1,9 @@
 package main;
 
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,7 +13,7 @@ import java.util.List;
 import javax.swing.*;
 
 /**
- * GamePanel - COMPLETE VERSION với Power-up System
+ * GamePanel - FIXED với đầy đủ sound effects
  */
 public class GamePanel extends JPanel implements ActionListener {
     public static final int WIDTH = 800;
@@ -39,6 +42,13 @@ public class GamePanel extends JPanel implements ActionListener {
     private Font gameFont;
     private Font bigFont;
 
+    // Buttons và Mouse tracking
+    private Button startButton;
+    private Button muteButton;
+    private Button restartButton;
+    private int mouseX = 0;
+    private int mouseY = 0;
+
     public GamePanel() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         setBackground(Color.BLACK);
@@ -46,6 +56,8 @@ public class GamePanel extends JPanel implements ActionListener {
 
         initializeGame();
         setupInput();
+        setupMouse();
+        setupButtons();
         setupTimer();
         setupFonts();
         gameTimer.start();
@@ -53,7 +65,7 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     private void initializeGame() {
-        currentState = GameState.MENU;
+        currentState = GameState.START;
         inputHandler = new InputHandler();
 
         player = new Player(WIDTH / 2 - 40, HEIGHT - 130);
@@ -76,6 +88,88 @@ public class GamePanel extends JPanel implements ActionListener {
         addKeyListener(inputHandler);
     }
 
+    private void setupMouse() {
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                handleMouseClick(e.getX(), e.getY());
+            }
+        });
+
+        addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                mouseX = e.getX();
+                mouseY = e.getY();
+            }
+        });
+    }
+
+    private void setupButtons() {
+        int buttonWidth = 200;
+        int buttonHeight = 80;
+        int startX = WIDTH / 2 - buttonWidth / 2;
+        int startY = HEIGHT / 2 - 20;
+
+        if (Assets.startButtonImage != null) {
+            startButton = new Button(startX, startY, buttonWidth, buttonHeight, Assets.startButtonImage);
+        } else {
+            startButton = new Button(startX, startY, buttonWidth, buttonHeight, "START");
+        }
+
+        int muteSize = 60;
+        int muteX = WIDTH - muteSize - 20;
+        int muteY = 20;
+
+        if (Assets.muteButtonImage != null) {
+            muteButton = new Button(muteX, muteY, muteSize, muteSize, Assets.muteButtonImage);
+        } else {
+            muteButton = new Button(muteX, muteY, muteSize, muteSize, "MUTE");
+        }
+
+        int restartX = WIDTH / 2 - buttonWidth / 2;
+        int restartY = HEIGHT / 2 + 20;
+
+        if (Assets.restartButtonImage != null) {
+            restartButton = new Button(restartX, restartY, buttonWidth, buttonHeight, Assets.restartButtonImage);
+        } else {
+            restartButton = new Button(restartX, restartY, buttonWidth, buttonHeight, "RESTART");
+        }
+    }
+
+    /**
+     * ⭐ FIXED: Thêm âm thanh button click
+     */
+    private void handleMouseClick(int x, int y) {
+        if (currentState == GameState.START) {
+            if (startButton.isClicked(x, y)) {
+                Assets.playButtonSound(); // ⭐ Âm thanh button
+                startGame();
+                resetGame();
+            }
+            if (muteButton.isClicked(x, y)) {
+                Assets.playButtonSound(); // ⭐ Âm thanh button
+                Assets.toggleSound();
+            }
+        } else if (currentState == GameState.END) {
+            if (restartButton.isClicked(x, y)) {
+                Assets.playButtonSound(); // ⭐ Âm thanh button
+                startGame();
+                resetGame();
+            }
+            if (muteButton.isClicked(x, y)) {
+                Assets.playButtonSound(); // ⭐ Âm thanh button
+                Assets.toggleSound();
+            }
+        } else if (currentState == GameState.PLAYING) {
+            // Mute button vẫn hoạt động khi đang chơi
+            if (muteButton.isClicked(x, y)) {
+                Assets.playButtonSound(); // ⭐ Âm thanh button
+                Assets.toggleSound();
+            }
+        }
+    }
+
     private void setupTimer() {
         gameTimer = new Timer(DELAY, this);
     }
@@ -89,6 +183,7 @@ public class GamePanel extends JPanel implements ActionListener {
         currentState = GameState.PLAYING;
         gameRunning = true;
         gameTimer.start();
+        Assets.playBackgroundMusic();
         requestFocus();
     }
 
@@ -108,14 +203,10 @@ public class GamePanel extends JPanel implements ActionListener {
         items.clear();
         waveManager = new WaveManager();
         player.reset();
-        // Cập nhật background cho wave đầu tiên
         updateBackgroundForWave();
         spawnWave();
     }
 
-    /**
-     * Spawn wave enemies
-     */
     private void spawnWave() {
         enemies.clear();
         waveManager.spawnWave(enemies, WIDTH, HEIGHT);
@@ -123,13 +214,20 @@ public class GamePanel extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if (currentState == GameState.START) {
+            startButton.update(mouseX, mouseY);
+            muteButton.update(mouseX, mouseY);
+        } else if (currentState == GameState.END) {
+            restartButton.update(mouseX, mouseY);
+            muteButton.update(mouseX, mouseY);
+        } else if (currentState == GameState.PLAYING) {
+            muteButton.update(mouseX, mouseY);
+        }
+
         update();
         repaint();
     }
 
-    /**
-     * FIXED: Update game logic
-     */
     private void update() {
         handleInput();
 
@@ -143,13 +241,13 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     private void handleInput() {
-        if (currentState == GameState.MENU) {
+        if (currentState == GameState.START) {
             if (inputHandler.isKeyJustPressed(InputHandler.KEY_ENTER)) {
+                Assets.playButtonSound(); // ⭐ Âm thanh button
                 startGame();
                 resetGame();
             }
         } else if (currentState == GameState.PLAYING) {
-            // ★ DI CHUYỂN 4 HƯỚNG ★
             if (inputHandler.isKeyPressed(InputHandler.KEY_LEFT)) {
                 player.moveLeft();
             }
@@ -163,7 +261,6 @@ public class GamePanel extends JPanel implements ActionListener {
                 player.moveDown();
             }
 
-            // BẮN (giữ SPACE để bắn liên tục)
             if (inputHandler.isKeyPressed(InputHandler.KEY_SPACE)) {
                 player.shoot(playerBullets);
             }
@@ -175,17 +272,20 @@ public class GamePanel extends JPanel implements ActionListener {
             if (inputHandler.isKeyJustPressed(InputHandler.KEY_P)) {
                 currentState = GameState.PLAYING;
             }
-        } else if (currentState == GameState.GAMEOVER) {
+        } else if (currentState == GameState.END) {
             if (inputHandler.isKeyJustPressed(InputHandler.KEY_ENTER)) {
-                currentState = GameState.MENU;
+                Assets.playButtonSound(); // ⭐ Âm thanh button
+                startGame();
                 resetGame();
+            }
+            if (inputHandler.isKeyJustPressed(InputHandler.KEY_ESCAPE)) {
+                Assets.playButtonSound(); // ⭐ Âm thanh button
+                currentState = GameState.START;
+                Assets.stopBackgroundMusic();
             }
         }
     }
 
-    /**
-     * FIXED: Update game objects
-     */
     private void updateGameObjects() {
         player.update();
 
@@ -197,7 +297,7 @@ public class GamePanel extends JPanel implements ActionListener {
         updateBullets(playerBullets);
         updateBullets(enemyBullets);
         updateExplosions();
-        updateItems(); // ★ CẬP NHẬT ITEMS ★
+        updateItems();
 
         waveManager.checkAndSpawnBoss(enemies, WIDTH, HEIGHT);
     }
@@ -213,35 +313,27 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
 
-    /**
-     * ★ CẬP NHẬT ITEMS VÀ KIỂM TRA VA CHẠM VỚI PLAYER ★
-     */
     private void updateItems() {
         Iterator<Item> iterator = items.iterator();
         while (iterator.hasNext()) {
             Item item = iterator.next();
             item.update();
 
-            // Kiểm tra va chạm với player
             if (item.isActive() && item.getBounds().intersects(player.getBounds())) {
                 collectItem(item);
                 item.setActive(false);
             }
 
-            // Xóa item không còn active
             if (!item.isActive()) {
                 iterator.remove();
             }
         }
     }
 
-    /**
-     * ★ NHẶT ITEM VÀ KÍCH HOẠT POWER-UP ★
-     */
     private void collectItem(Item item) {
         switch (item.getType()) {
             case HEALTH:
-                if (lives < 5) { // Giới hạn tối đa 5 lives
+                if (lives < 5) {
                     lives++;
                 }
                 break;
@@ -261,9 +353,6 @@ public class GamePanel extends JPanel implements ActionListener {
                 player.activateShield();
                 break;
         }
-
-        // Phát âm thanh khi nhặt item (nếu có)
-        // Assets.playItemPickupSound();
     }
 
     private void updateBullets(List<Bullet> bullets) {
@@ -278,15 +367,13 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     /**
-     * ★ KIỂM TRA VA CHẠM VỚI HỖ TRỢ PIERCING VÀ SHIELD ★
+     * ⭐ FIXED: Thêm âm thanh death và gameOver
      */
     private void checkCollisions() {
-        // Player bullets vs Enemies (HỖ TRỢ PIERCING)
         Iterator<Bullet> bulletIterator = playerBullets.iterator();
         while (bulletIterator.hasNext()) {
             Bullet bullet = bulletIterator.next();
 
-            // Bỏ qua đạn enemy (direction > 0)
             if (bullet.getDirection() > 0) continue;
 
             Iterator<Enemy> enemyIterator = enemies.iterator();
@@ -296,7 +383,6 @@ public class GamePanel extends JPanel implements ActionListener {
                 if (enemy.isActive() && Collision.checkBulletEnemyCollision(bullet, enemy)) {
                     enemy.takeDamage(bullet.getDamage());
 
-                    // ★ GỌI onHit() THAY VÌ setActive(false) ★
                     bullet.onHit();
 
                     if (!enemy.isActive()) {
@@ -306,14 +392,10 @@ public class GamePanel extends JPanel implements ActionListener {
                                 35
                         ));
                         score += enemy.getScoreValue();
-
-                        // ★ SPAWN POWER-UP ITEMS ★
                         spawnPowerUpItem(enemy.getX() + enemy.getWidth()/2, enemy.getY());
-
                         Assets.playExplosionSound();
                     }
 
-                    // ★ CHỈ BREAK NẾU KHÔNG PHẢI PIERCING ★
                     if (!bullet.isPiercing()) {
                         break;
                     }
@@ -321,7 +403,6 @@ public class GamePanel extends JPanel implements ActionListener {
             }
         }
 
-        // Enemy bullets vs Player (HỖ TRỢ SHIELD)
         bulletIterator = enemyBullets.iterator();
         while (bulletIterator.hasNext()) {
             Bullet bullet = bulletIterator.next();
@@ -329,21 +410,23 @@ public class GamePanel extends JPanel implements ActionListener {
             if (bullet.isActive() && Collision.checkEnemyBulletPlayerCollision(bullet, player)) {
                 bullet.setActive(false);
 
-                // ★ XỬ LÝ SHIELD VÀ INVINCIBILITY ★
                 boolean tookDamage = player.takeDamage();
 
                 if (tookDamage) {
-                    // Player thực sự mất máu (không có shield)
+                    // ⭐ Phát âm thanh death khi player bị damage
+                    Assets.playDeathSound();
+
                     lives--;
                     if (lives <= 0) {
-                        currentState = GameState.GAMEOVER;
+                        currentState = GameState.END;
+                        Assets.stopBackgroundMusic();
+                        // ⭐ Phát âm thanh game over
+                        Assets.playGameOverSound();
                     }
                 }
-                // Nếu không tookDamage = mất shield hoặc đang invincible
             }
         }
 
-        // Enemy vs Player (HỖ TRỢ SHIELD)
         Iterator<Enemy> enemyCollisionIterator = enemies.iterator();
         while (enemyCollisionIterator.hasNext()) {
             Enemy enemy = enemyCollisionIterator.next();
@@ -351,7 +434,6 @@ public class GamePanel extends JPanel implements ActionListener {
             if (enemy.isActive() && Collision.checkEnemyPlayerCollision(enemy, player)) {
                 enemy.setActive(false);
 
-                // ★ XỬ LÝ SHIELD VÀ INVINCIBILITY ★
                 boolean tookDamage = player.takeDamage();
 
                 explosions.add(new Explosion(
@@ -361,27 +443,29 @@ public class GamePanel extends JPanel implements ActionListener {
                 ));
 
                 if (tookDamage) {
+                    // ⭐ Phát âm thanh death khi player bị damage
+                    Assets.playDeathSound();
+
                     lives--;
                     if (lives <= 0) {
-                        currentState = GameState.GAMEOVER;
+                        currentState = GameState.END;
+                        Assets.stopBackgroundMusic();
+                        // ⭐ Phát âm thanh game over
+                        Assets.playGameOverSound();
                     }
                 }
             }
         }
     }
 
-    /**
-     * ★ SPAWN POWER-UP ITEMS (30% cơ hội) ★
-     */
     private void spawnPowerUpItem(int x, int y) {
         java.util.Random random = new java.util.Random();
         double rand = random.nextDouble();
 
-        if (rand < 0.3) { // 30% cơ hội drop item
+        if (rand < 0.3) {
             Item.ItemType type;
             double itemRand = random.nextDouble();
 
-            // Phân phối items: 25% mỗi loại power-up, 15% health, 10% score
             if (itemRand < 0.25) {
                 type = Item.ItemType.TRIPLE_SHOT;
             } else if (itemRand < 0.5) {
@@ -398,29 +482,15 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
 
-    /**
-     * ★ GIỮ NGUYÊN - FALLBACK CHO CODE CŨ ★
-     */
-    private void spawnRandomItem(int x, int y) {
-        spawnPowerUpItem(x, y);
-    }
-
-    /**
-     * Check wave progress và chuyển wave
-     */
     private void checkWaveProgress() {
         if (waveManager.isWaveComplete(enemies)) {
             waveManager.nextWave();
             level = waveManager.getCurrentWave();
-            // Cập nhật background theo wave mới
             updateBackgroundForWave();
             spawnWave();
         }
     }
-    
-    /**
-     * Cập nhật background theo wave hiện tại
-     */
+
     private void updateBackgroundForWave() {
         int currentWave = waveManager.getCurrentWave();
         BufferedImage newBackground = Assets.getBackgroundImage(currentWave);
@@ -435,13 +505,12 @@ public class GamePanel extends JPanel implements ActionListener {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        if (Assets.backGroundImage != null) {
-            g2d.drawImage(Assets.backGroundImage, 0, 0, getWidth(), getHeight(), null);
-        }
-
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         switch (currentState) {
+            case START:
+                drawStartScreen(g2d);
+                break;
             case MENU:
                 drawMenu(g2d);
                 break;
@@ -452,10 +521,118 @@ public class GamePanel extends JPanel implements ActionListener {
                     drawPauseScreen(g2d);
                 }
                 break;
+            case END:
+                drawEndScreen(g2d);
+                break;
             case GAMEOVER:
                 drawGameOver(g2d);
                 break;
         }
+    }
+
+    private void drawStartScreen(Graphics2D g2d) {
+        if (Assets.backGroundStartImage != null) {
+            g2d.drawImage(Assets.backGroundStartImage, 0, 0, WIDTH, HEIGHT, null);
+        } else {
+            GradientPaint gradient = new GradientPaint(
+                    0, 0, new Color(20, 20, 50),
+                    0, HEIGHT, new Color(50, 20, 80)
+            );
+            g2d.setPaint(gradient);
+            g2d.fillRect(0, 0, WIDTH, HEIGHT);
+        }
+
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Arial", Font.BOLD, 48));
+        String title = "SPACE INVADERS";
+        FontMetrics fm = g2d.getFontMetrics();
+        int x = (WIDTH - fm.stringWidth(title)) / 2;
+        int y = HEIGHT / 3;
+
+        g2d.setColor(new Color(0, 0, 0, 150));
+        g2d.drawString(title, x + 3, y + 3);
+
+        g2d.setColor(new Color(255, 215, 0));
+        g2d.drawString(title, x, y);
+
+        startButton.draw(g2d);
+        muteButton.draw(g2d);
+
+        g2d.setFont(new Font("Arial", Font.PLAIN, 14));
+        g2d.setColor(Color.WHITE);
+        String soundStatus = Assets.isSoundEnabled() ? "Sound: ON" : "Sound: OFF";
+        g2d.drawString(soundStatus, WIDTH - 100, 90);
+
+        g2d.setFont(new Font("Arial", Font.PLAIN, 16));
+        g2d.setColor(new Color(200, 200, 200));
+        String hint = "Press ENTER to Start";
+        fm = g2d.getFontMetrics();
+        x = (WIDTH - fm.stringWidth(hint)) / 2;
+        g2d.drawString(hint, x, HEIGHT - 50);
+    }
+
+    private void drawEndScreen(Graphics2D g2d) {
+        if (Assets.backGroundEndImage != null) {
+            g2d.drawImage(Assets.backGroundEndImage, 0, 0, WIDTH, HEIGHT, null);
+        } else {
+            GradientPaint gradient = new GradientPaint(
+                    0, 0, new Color(10, 10, 20),
+                    0, HEIGHT, new Color(40, 10, 10)
+            );
+            g2d.setPaint(gradient);
+            g2d.fillRect(0, 0, WIDTH, HEIGHT);
+        }
+
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Arial", Font.BOLD, 56));
+        String gameOverText = "GAME OVER";
+        FontMetrics fm = g2d.getFontMetrics();
+        int x = (WIDTH - fm.stringWidth(gameOverText)) / 2;
+        int y = HEIGHT / 3;
+
+        g2d.setColor(new Color(0, 0, 0, 150));
+        g2d.drawString(gameOverText, x + 3, y + 3);
+
+        g2d.setColor(new Color(255, 50, 50));
+        g2d.drawString(gameOverText, x, y);
+
+        g2d.setFont(new Font("Arial", Font.BOLD, 28));
+        g2d.setColor(Color.WHITE);
+        String scoreText = "Final Score: " + score;
+        fm = g2d.getFontMetrics();
+        x = (WIDTH - fm.stringWidth(scoreText)) / 2;
+        y += 70;
+        g2d.drawString(scoreText, x, y);
+
+        g2d.setFont(new Font("Arial", Font.PLAIN, 20));
+        g2d.setColor(new Color(200, 200, 200));
+        String waveText = "Wave Reached: " + waveManager.getCurrentWave();
+        fm = g2d.getFontMetrics();
+        x = (WIDTH - fm.stringWidth(waveText)) / 2;
+        y += 40;
+        g2d.drawString(waveText, x, y);
+
+        restartButton.draw(g2d);
+        muteButton.draw(g2d);
+
+        g2d.setFont(new Font("Arial", Font.PLAIN, 14));
+        g2d.setColor(Color.WHITE);
+        String soundStatus = Assets.isSoundEnabled() ? "Sound: ON" : "Sound: OFF";
+        g2d.drawString(soundStatus, WIDTH - 100, 90);
+
+        g2d.setFont(new Font("Arial", Font.PLAIN, 18));
+        g2d.setColor(new Color(220, 220, 220));
+        String escText = "Bấm ESC để trở về giao diện bắt đầu";
+        fm = g2d.getFontMetrics();
+        x = (WIDTH - fm.stringWidth(escText)) / 2;
+        g2d.drawString(escText, x, HEIGHT - 80);
+
+        g2d.setFont(new Font("Arial", Font.PLAIN, 16));
+        g2d.setColor(new Color(180, 180, 180));
+        String enterText = "Press ENTER to Restart";
+        fm = g2d.getFontMetrics();
+        x = (WIDTH - fm.stringWidth(enterText)) / 2;
+        g2d.drawString(enterText, x, HEIGHT - 50);
     }
 
     private void drawMenu(Graphics2D g2d) {
@@ -477,6 +654,10 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     private void drawGame(Graphics2D g2d) {
+        if (Assets.backGroundImage != null) {
+            g2d.drawImage(Assets.backGroundImage, 0, 0, getWidth(), getHeight(), null);
+        }
+
         player.draw(g2d);
 
         for (Enemy enemy : enemies) {
@@ -499,12 +680,15 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         drawUI(g2d);
-        drawPowerUpHUD(g2d); // ★ VẼ POWER-UP HUD ★
+        drawPowerUpHUD(g2d);
+
+        muteButton.draw(g2d);
+        g2d.setFont(new Font("Arial", Font.PLAIN, 12));
+        g2d.setColor(Color.WHITE);
+        String soundStatus = Assets.isSoundEnabled() ? "ON" : "OFF";
+        g2d.drawString(soundStatus, WIDTH - 50, 90);
     }
 
-    /**
-     * ★ VẼ UI HUD VỚI POWER-UP TIMERS ★
-     */
     private void drawUI(Graphics2D g2d) {
         g2d.setColor(Color.WHITE);
         g2d.setFont(gameFont);
@@ -512,25 +696,14 @@ public class GamePanel extends JPanel implements ActionListener {
         g2d.drawString("Score: " + score, 10, 25);
         g2d.drawString("Lives: " + lives, 10, 50);
         g2d.drawString("Wave: " + waveManager.getCurrentWave(), 10, 75);
-
-        int activeEnemies = 0;
-        for (Enemy enemy : enemies) {
-            if (enemy.isActive()) {
-                activeEnemies++;
-            }
-        }
     }
 
-    /**
-     * ★ VẼ POWER-UP HUD (THỜI GIAN CÒN LẠI) ★
-     */
     private void drawPowerUpHUD(Graphics2D g2d) {
         int hudX = WIDTH - 200;
-        int hudY = 30;
+        int hudY = 120;
 
         g2d.setFont(new Font("Arial", Font.BOLD, 14));
 
-        // Triple Shot
         if (player.hasTripleShot()) {
             g2d.setColor(Color.YELLOW);
             int seconds = player.getTripleShotDuration() / 60;
@@ -538,7 +711,6 @@ public class GamePanel extends JPanel implements ActionListener {
             hudY += 25;
         }
 
-        // Piercing
         if (player.hasPiercing()) {
             g2d.setColor(Color.CYAN);
             int seconds = player.getPiercingDuration() / 60;
@@ -546,7 +718,6 @@ public class GamePanel extends JPanel implements ActionListener {
             hudY += 25;
         }
 
-        // Shield
         if (player.hasShield()) {
             g2d.setColor(new Color(100, 200, 255));
             int seconds = player.getShieldDuration() / 60;
