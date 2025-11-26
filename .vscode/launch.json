@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Space Invaders",
+            "request": "launch",
+            "mainClass": "spaceinvaders.Main",
+            "projectName": "BTLJAVA",
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
