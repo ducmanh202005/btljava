@@ -12,7 +12,7 @@ import java.util.List;
 import javax.swing.*;
 
 /**
- * GamePanel - FIXED với đầy đủ sound effects
+ * GamePanel - REFACTORED với AssetManager
  */
 public class GamePanel extends JPanel implements ActionListener {
     public static final int WIDTH = 800;
@@ -24,6 +24,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
     private GameState currentState;
     private InputHandler inputHandler;
+    private AssetManager assetManager;
 
     private Player player;
     private List<Enemy> enemies;
@@ -41,7 +42,6 @@ public class GamePanel extends JPanel implements ActionListener {
     private Font gameFont;
     private Font bigFont;
 
-    // Buttons và Mouse tracking
     private Button startButton;
     private Button muteButton;
     private Button restartButton;
@@ -66,6 +66,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private void initializeGame() {
         currentState = GameState.START;
         inputHandler = new InputHandler();
+        assetManager = AssetManager.getInstance();
 
         player = new Player(WIDTH / 2 - 40, HEIGHT - 130);
         enemies = new ArrayList<>();
@@ -79,8 +80,6 @@ public class GamePanel extends JPanel implements ActionListener {
         lives = 3;
         level = 1;
         gameRunning = false;
-
-        Assets.loadAssets();
     }
 
     private void setupInput() {
@@ -108,19 +107,21 @@ public class GamePanel extends JPanel implements ActionListener {
         int buttonWidth = 200;
         int buttonHeight = 80;
         int startX = WIDTH / 2 - buttonWidth / 2;
-        int startY = HEIGHT / 2 + 50;  // Đẩy xuống dưới title
+        int startY = HEIGHT / 2 + 50;
 
-        if (Assets.startButtonImage != null) {
-            startButton = new Button(startX, startY, buttonWidth, buttonHeight, Assets.startButtonImage);
+        BufferedImage startImg = assetManager.getStartButtonImage();
+        if (startImg != null) {
+            startButton = new Button(startX, startY, buttonWidth, buttonHeight, startImg);
         } else {
             startButton = new Button(startX, startY, buttonWidth, buttonHeight, "START");
         }
 
         int muteX = WIDTH / 2 - buttonWidth / 2;
-        int muteY = startY + buttonHeight + 20;  // Ngay dưới nút START
+        int muteY = startY + buttonHeight + 20;
 
-        if (Assets.muteButtonImage != null) {
-            muteButton = new Button(muteX, muteY, buttonWidth, buttonHeight, Assets.muteButtonImage);
+        BufferedImage muteImg = assetManager.getMuteButtonImage();
+        if (muteImg != null) {
+            muteButton = new Button(muteX, muteY, buttonWidth, buttonHeight, muteImg);
         } else {
             muteButton = new Button(muteX, muteY, buttonWidth, buttonHeight, "MUTE");
         }
@@ -128,42 +129,41 @@ public class GamePanel extends JPanel implements ActionListener {
         int restartX = WIDTH / 2 - buttonWidth / 2;
         int restartY = HEIGHT / 2 + 20;
 
-        if (Assets.restartButtonImage != null) {
-            restartButton = new Button(restartX, restartY, buttonWidth, buttonHeight, Assets.restartButtonImage);
+        BufferedImage restartImg = assetManager.getRestartButtonImage();
+        if (restartImg != null) {
+            restartButton = new Button(restartX, restartY, buttonWidth, buttonHeight, restartImg);
         } else {
             restartButton = new Button(restartX, restartY, buttonWidth, buttonHeight, "RESTART");
         }
     }
 
-    /**
-     * ⭐ FIXED: Thêm âm thanh button click
-     */
     private void handleMouseClick(int x, int y) {
+        SoundManager soundMgr = assetManager.getSoundManager();
+        
         if (currentState == GameState.START) {
             if (startButton.isClicked(x, y)) {
-                Assets.playButtonSound(); // ⭐ Âm thanh button
+                soundMgr.playButtonSound();
                 startGame();
                 resetGame();
             }
             if (muteButton.isClicked(x, y)) {
-                Assets.playButtonSound(); // ⭐ Âm thanh button
-                Assets.toggleSound();
+                soundMgr.playButtonSound();
+                soundMgr.toggleSound();
             }
         } else if (currentState == GameState.END) {
             if (restartButton.isClicked(x, y)) {
-                Assets.playButtonSound(); // ⭐ Âm thanh button
+                soundMgr.playButtonSound();
                 startGame();
                 resetGame();
             }
             if (muteButton.isClicked(x, y)) {
-                Assets.playButtonSound(); // ⭐ Âm thanh button
-                Assets.toggleSound();
+                soundMgr.playButtonSound();
+                soundMgr.toggleSound();
             }
         } else if (currentState == GameState.PLAYING) {
-            // Mute button vẫn hoạt động khi đang chơi
             if (muteButton.isClicked(x, y)) {
-                Assets.playButtonSound(); // ⭐ Âm thanh button
-                Assets.toggleSound();
+                soundMgr.playButtonSound();
+                soundMgr.toggleSound();
             }
         }
     }
@@ -181,7 +181,7 @@ public class GamePanel extends JPanel implements ActionListener {
         currentState = GameState.PLAYING;
         gameRunning = true;
         gameTimer.start();
-        Assets.playBackgroundMusic();
+        assetManager.getSoundManager().playBackgroundMusic();
         requestFocus();
     }
 
@@ -239,9 +239,11 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     private void handleInput() {
+        SoundManager soundMgr = assetManager.getSoundManager();
+        
         if (currentState == GameState.START) {
             if (inputHandler.isKeyJustPressed(InputHandler.KEY_ENTER)) {
-                Assets.playButtonSound(); // ⭐ Âm thanh button
+                soundMgr.playButtonSound();
                 startGame();
                 resetGame();
             }
@@ -272,14 +274,14 @@ public class GamePanel extends JPanel implements ActionListener {
             }
         } else if (currentState == GameState.END) {
             if (inputHandler.isKeyJustPressed(InputHandler.KEY_ENTER)) {
-                Assets.playButtonSound(); // ⭐ Âm thanh button
+                soundMgr.playButtonSound();
                 startGame();
                 resetGame();
             }
             if (inputHandler.isKeyJustPressed(InputHandler.KEY_ESCAPE)) {
-                Assets.playButtonSound(); // ⭐ Âm thanh button
+                soundMgr.playButtonSound();
                 currentState = GameState.START;
-                Assets.stopBackgroundMusic();
+                soundMgr.stopBackgroundMusic();
             }
         }
     }
@@ -364,10 +366,9 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
 
-    /**
-     * ⭐ FIXED: Thêm âm thanh death và gameOver
-     */
     private void checkCollisions() {
+        SoundManager soundMgr = assetManager.getSoundManager();
+        
         Iterator<Bullet> bulletIterator = playerBullets.iterator();
         while (bulletIterator.hasNext()) {
             Bullet bullet = bulletIterator.next();
@@ -391,7 +392,7 @@ public class GamePanel extends JPanel implements ActionListener {
                         ));
                         score += enemy.getScoreValue();
                         spawnPowerUpItem(enemy.getX() + enemy.getWidth()/2, enemy.getY());
-                        Assets.playExplosionSound();
+                        soundMgr.playExplosionSound();
                     }
 
                     if (!bullet.isPiercing()) {
@@ -411,15 +412,13 @@ public class GamePanel extends JPanel implements ActionListener {
                 boolean tookDamage = player.takeDamage();
 
                 if (tookDamage) {
-                    // ⭐ Phát âm thanh death khi player bị damage
-                    Assets.playDeathSound();
+                    soundMgr.playDeathSound();
 
                     lives--;
                     if (lives <= 0) {
                         currentState = GameState.END;
-                        Assets.stopBackgroundMusic();
-                        // ⭐ Phát âm thanh game over
-                        Assets.playGameOverSound();
+                        soundMgr.stopBackgroundMusic();
+                        soundMgr.playGameOverSound();
                     }
                 }
             }
@@ -441,15 +440,13 @@ public class GamePanel extends JPanel implements ActionListener {
                 ));
 
                 if (tookDamage) {
-                    // ⭐ Phát âm thanh death khi player bị damage
-                    Assets.playDeathSound();
+                    soundMgr.playDeathSound();
 
                     lives--;
                     if (lives <= 0) {
                         currentState = GameState.END;
-                        Assets.stopBackgroundMusic();
-                        // ⭐ Phát âm thanh game over
-                        Assets.playGameOverSound();
+                        soundMgr.stopBackgroundMusic();
+                        soundMgr.playGameOverSound();
                     }
                 }
             }
@@ -491,9 +488,9 @@ public class GamePanel extends JPanel implements ActionListener {
 
     private void updateBackgroundForWave() {
         int currentWave = waveManager.getCurrentWave();
-        BufferedImage newBackground = Assets.getBackgroundImage(currentWave);
+        BufferedImage newBackground = assetManager.getBackgroundImage(currentWave);
         if (newBackground != null) {
-            Assets.backGroundImage = newBackground;
+            assetManager.setBackGroundImage(newBackground);
             System.out.println("[BACKGROUND] Đổi background cho wave " + currentWave);
         }
     }
@@ -529,8 +526,9 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     private void drawStartScreen(Graphics2D g2d) {
-        if (Assets.backGroundStartImage != null) {
-            g2d.drawImage(Assets.backGroundStartImage, 0, 0, WIDTH, HEIGHT, null);
+        BufferedImage bgStart = assetManager.getBackGroundStartImage();
+        if (bgStart != null) {
+            g2d.drawImage(bgStart, 0, 0, WIDTH, HEIGHT, null);
         } else {
             GradientPaint gradient = new GradientPaint(
                     0, 0, new Color(20, 20, 50),
@@ -540,13 +538,13 @@ public class GamePanel extends JPanel implements ActionListener {
             g2d.fillRect(0, 0, WIDTH, HEIGHT);
         }
 
-        // Vẽ tiêu đề - dùng ảnh nếu có, không thì vẽ text
-        if (Assets.titleImage != null) {
+        BufferedImage titleImg = assetManager.getTitleImage();
+        if (titleImg != null) {
             int titleWidth = 700;
             int titleHeight = 160;
             int x = (WIDTH - titleWidth) / 2;
-            int y = 180;  // Ngay sát trên nút START
-            g2d.drawImage(Assets.titleImage, x, y, titleWidth, titleHeight, null);
+            int y = 180;
+            g2d.drawImage(titleImg, x, y, titleWidth, titleHeight, null);
         } else {
             g2d.setColor(Color.WHITE);
             g2d.setFont(new Font("Arial", Font.BOLD, 48));
@@ -565,19 +563,19 @@ public class GamePanel extends JPanel implements ActionListener {
         startButton.draw(g2d);
         muteButton.draw(g2d);
 
-        // Hiển thị trạng thái sound ngay dưới nút mute
         g2d.setFont(new Font("Arial", Font.PLAIN, 14));
         g2d.setColor(Color.WHITE);
-        String soundStatus = Assets.isSoundEnabled() ? "ON" : "OFF";
+        String soundStatus = assetManager.getSoundManager().isSoundEnabled() ? "ON" : "OFF";
         FontMetrics fmSound = g2d.getFontMetrics();
         int soundX = WIDTH / 2 - fmSound.stringWidth(soundStatus) / 2;
-        int soundY = HEIGHT / 2 + 50 + 80 + 20 + 60 + 15;  // Dưới nút mute
+        int soundY = HEIGHT / 2 + 50 + 80 + 20 + 60 + 15;
         g2d.drawString(soundStatus, soundX, soundY);
     }
 
     private void drawEndScreen(Graphics2D g2d) {
-        if (Assets.backGroundEndImage != null) {
-            g2d.drawImage(Assets.backGroundEndImage, 0, 0, WIDTH, HEIGHT, null);
+        BufferedImage bgEnd = assetManager.getBackGroundEndImage();
+        if (bgEnd != null) {
+            g2d.drawImage(bgEnd, 0, 0, WIDTH, HEIGHT, null);
         } else {
             GradientPaint gradient = new GradientPaint(
                     0, 0, new Color(10, 10, 20),
@@ -589,48 +587,13 @@ public class GamePanel extends JPanel implements ActionListener {
 
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.BOLD, 56));
-        // String gameOverText = "GAME OVER";
-        // FontMetrics fm = g2d.getFontMetrics();
-        // int x = (WIDTH - fm.stringWidth(gameOverText)) / 2;
-        // int y = HEIGHT / 3;
-
-        // g2d.setColor(new Color(0, 0, 0, 150));
-        // g2d.drawString(gameOverText, x + 3, y + 3);
-
-        // g2d.setColor(new Color(255, 50, 50));
-        // g2d.drawString(gameOverText, x, y);
-
-        // g2d.setFont(new Font("Arial", Font.BOLD, 28));
-        // g2d.setColor(Color.WHITE);
         String scoreText = "Final Score: " + score;
-       FontMetrics fm = g2d.getFontMetrics();
+        FontMetrics fm = g2d.getFontMetrics();
         int x = (WIDTH - fm.stringWidth(scoreText)) / 2;
-       int y =  HEIGHT /3 + 70;
+        int y = HEIGHT / 3 + 70;
         g2d.drawString(scoreText, x, y);
 
-        // g2d.setFont(new Font("Arial", Font.PLAIN, 20));
-        // g2d.setColor(new Color(200, 200, 200));
-        // String waveText = "Wave Reached: " + waveManager.getCurrentWave();
-        // fm = g2d.getFontMetrics();
-        // x = (WIDTH - fm.stringWidth(waveText)) / 2;
-        // y += 40;
-        // g2d.drawString(waveText, x, y);
-
         restartButton.draw(g2d);
-
-        // g2d.setFont(new Font("Arial", Font.PLAIN, 18));
-        // g2d.setColor(new Color(220, 220, 220));
-        // String escText = "Bấm ESC để trở về giao diện bắt đầu";
-        // fm = g2d.getFontMetrics();
-        // x = (WIDTH - fm.stringWidth(escText)) / 2;
-        // g2d.drawString(escText, x, HEIGHT - 80);
-
-        // g2d.setFont(new Font("Arial", Font.PLAIN, 16));
-        // g2d.setColor(new Color(180, 180, 180));
-        // String enterText = "Press ENTER to Restart";
-        // fm = g2d.getFontMetrics();
-        // x = (WIDTH - fm.stringWidth(enterText)) / 2;
-        // g2d.drawString(enterText, x, HEIGHT - 50);
     }
 
     private void drawMenu(Graphics2D g2d) {
@@ -642,18 +605,12 @@ public class GamePanel extends JPanel implements ActionListener {
         int x = (WIDTH - fm.stringWidth(title)) / 2;
         int y = HEIGHT / 2 - 50;
         g2d.drawString(title, x, y);
-
-        // g2d.setFont(gameFont);
-        // String startText = "Press ENTER to Start";
-        // fm = g2d.getFontMetrics();
-        // x = (WIDTH - fm.stringWidth(startText)) / 2;
-        // y += 80;
-        // g2d.drawString(startText, x, y);
     }
 
     private void drawGame(Graphics2D g2d) {
-        if (Assets.backGroundImage != null) {
-            g2d.drawImage(Assets.backGroundImage, 0, 0, getWidth(), getHeight(), null);
+        BufferedImage bg = assetManager.getBackGroundImage();
+        if (bg != null) {
+            g2d.drawImage(bg, 0, 0, getWidth(), getHeight(), null);
         }
 
         player.draw(g2d);
@@ -678,7 +635,6 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         drawUI(g2d);
-        // drawPowerUpHUD(g2d);
     }
 
     private void drawUI(Graphics2D g2d) {
@@ -689,33 +645,6 @@ public class GamePanel extends JPanel implements ActionListener {
         g2d.drawString("Lives: " + lives, 10, 50);
         g2d.drawString("Wave: " + waveManager.getCurrentWave(), 10, 75);
     }
-
-    // private void drawPowerUpHUD(Graphics2D g2d) {
-    //     int hudX = WIDTH - 200;
-    //     int hudY = 120;
-
-    //     g2d.setFont(new Font("Arial", Font.BOLD, 14));
-
-    //     if (player.hasTripleShot()) {
-    //         g2d.setColor(Color.YELLOW);
-    //         int seconds = player.getTripleShotDuration() / 60;
-    //         g2d.drawString("TRIPLE: " + seconds + "s", hudX, hudY);
-    //         hudY += 25;
-    //     }
-
-    //     if (player.hasPiercing()) {
-    //         g2d.setColor(Color.CYAN);
-    //         int seconds = player.getPiercingDuration() / 60;
-    //         g2d.drawString("PIERCE: " + seconds + "s", hudX, hudY);
-    //         hudY += 25;
-    //     }
-
-    //     if (player.hasShield()) {
-    //         g2d.setColor(new Color(100, 200, 255));
-    //         int seconds = player.getShieldDuration() / 60;
-    //         g2d.drawString("SHIELD: " + seconds + "s", hudX, hudY);
-    //     }
-    // }
 
     private void drawPauseScreen(Graphics2D g2d) {
         g2d.setColor(new Color(0, 0, 0, 128));
@@ -741,23 +670,10 @@ public class GamePanel extends JPanel implements ActionListener {
         g2d.setColor(Color.WHITE);
         g2d.setFont(bigFont);
 
-        // String gameOverText = "GAME OVER";
-        // FontMetrics fm = g2d.getFontMetrics();
-        // int x = (WIDTH - fm.stringWidth(gameOverText)) / 2;
-        // int y = HEIGHT / 2 - 50;
-        // g2d.drawString(gameOverText, x, y);
-
-        g2d.setFont(gameFont);
         String scoreText = "Final Score: " + score;
         FontMetrics fm = g2d.getFontMetrics();
         int x = (WIDTH - fm.stringWidth(scoreText)) / 2;
-        int y = HEIGHT / 2 ;
+        int y = HEIGHT / 2;
         g2d.drawString(scoreText, x, y);
-
-        // String restartText = "Press ENTER to Restart";
-        // fm = g2d.getFontMetrics();
-        // x = (WIDTH - fm.stringWidth(restartText)) / 2;
-        // y += 30;
-        // g2d.drawString(restartText, x, y);
     }
 }

@@ -1,8 +1,11 @@
+// ==================== Player.java ====================
 package spaceinvaders;
 import java.awt.*;
+import java.awt.image.BufferedImage; // ⭐ THÊM IMPORT NÀY
 
 /**
  * Lớp Player - tàu người chơi với power-ups và âm thanh
+ * REFACTORED: Sử dụng AssetManager thay vì Assets static
  */
 public class Player {
     private int x, y;
@@ -11,49 +14,50 @@ public class Player {
     private int speed = 5;
     private boolean active = true;
 
+    // Asset manager reference
+    private AssetManager assetManager;
+
     // Invincibility frames - nhấp nháy khi bị trúng
     private boolean invincible = false;
     private int invincibilityFrames = 0;
-    private static final int INVINCIBILITY_DURATION = 120; // 2 giây ở 60 FPS
+    private static final int INVINCIBILITY_DURATION = 120;
     private int blinkCounter = 0;
 
     // Power-up states
     private boolean tripleShot = false;
     private int tripleShotDuration = 0;
-    private static final int TRIPLE_SHOT_TIME = 600; // 10 giây
+    private static final int TRIPLE_SHOT_TIME = 600;
 
     private boolean piercing = false;
     private int piercingDuration = 0;
-    private static final int PIERCING_TIME = 600; // 10 giây
+    private static final int PIERCING_TIME = 600;
 
     // Shield system
     private boolean hasShield = false;
     private int shieldDuration = 0;
-    private static final int SHIELD_TIME = 900; // 15 giây
+    private static final int SHIELD_TIME = 900;
     private int shieldBlinkCounter = 0;
 
     // Shoot cooldown
     private int shootCooldown = 0;
-    private static final int SHOOT_DELAY = 10; // frames giữa các lần bắn
+    private static final int SHOOT_DELAY = 10;
 
     public Player(int x, int y) {
         this.x = x;
         this.y = y;
+        this.assetManager = AssetManager.getInstance();
     }
 
     public void update() {
-        // Cập nhật invincibility frames
         if (invincible) {
             invincibilityFrames--;
             blinkCounter++;
-
             if (invincibilityFrames <= 0) {
                 invincible = false;
                 blinkCounter = 0;
             }
         }
 
-        // Cập nhật power-up durations
         if (tripleShot) {
             tripleShotDuration--;
             if (tripleShotDuration <= 0) {
@@ -77,66 +81,47 @@ public class Player {
             }
         }
 
-        // Cập nhật shoot cooldown
         if (shootCooldown > 0) {
             shootCooldown--;
         }
     }
 
-    /**
-     * Kích hoạt triple shot power-up
-     */
     public void activateTripleShot() {
         tripleShot = true;
         tripleShotDuration = TRIPLE_SHOT_TIME;
     }
 
-    /**
-     * Kích hoạt piercing bullet power-up
-     */
     public void activatePiercing() {
         piercing = true;
         piercingDuration = PIERCING_TIME;
     }
 
-    /**
-     * Kích hoạt shield
-     */
     public void activateShield() {
         hasShield = true;
         shieldDuration = SHIELD_TIME;
         shieldBlinkCounter = 0;
     }
 
-    /**
-     * Xử lý va chạm - mất shield trước, sau đó mới mất máu
-     */
     public boolean takeDamage() {
         if (invincible) {
-            return false; // Không nhận damage khi đang invincible
+            return false;
         }
 
         if (hasShield) {
-            // Mất shield thay vì mất máu
             hasShield = false;
             shieldDuration = 0;
-            // Tạo invincibility ngắn sau khi mất shield
             invincible = true;
-            invincibilityFrames = 60; // 1 giây invincibility
+            invincibilityFrames = 60;
             blinkCounter = 0;
-            return false; // Không mất máu
+            return false;
         } else {
-            // Không có shield, nhận damage thật
             invincible = true;
             invincibilityFrames = INVINCIBILITY_DURATION;
             blinkCounter = 0;
-            return true; // Mất máu
+            return true;
         }
     }
 
-    /**
-     * Kiểm tra xem player có đang invincible không
-     */
     public boolean isInvincible() {
         return invincible;
     }
@@ -146,13 +131,14 @@ public class Player {
     }
 
     public void draw(Graphics2D g2d) {
-        // Nhấp nháy khi invincible
+        BufferedImage playerImg = assetManager.getPlayerImage();
+        
         if (invincible) {
             if (blinkCounter % 10 < 5) {
-                if (Assets.playerImage != null) {
+                if (playerImg != null) {
                     AlphaComposite alpha = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
                     g2d.setComposite(alpha);
-                    g2d.drawImage(Assets.playerImage, x, y, width, height, null);
+                    g2d.drawImage(playerImg, x, y, width, height, null);
                     g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
                 } else {
                     g2d.setColor(Color.RED);
@@ -160,32 +146,27 @@ public class Player {
                 }
             }
         } else {
-            // Vẽ player bình thường
-            if (Assets.playerImage != null) {
-                g2d.drawImage(Assets.playerImage, x, y, width, height, null);
+            if (playerImg != null) {
+                g2d.drawImage(playerImg, x, y, width, height, null);
             } else {
                 g2d.setColor(Color.GREEN);
                 g2d.fillRect(x, y, width, height);
             }
         }
 
-        // Vẽ shield nếu có
         if (hasShield) {
-            // Hiệu ứng nhấp nháy khi shield sắp hết (3 giây cuối)
             boolean drawShield = true;
-            if (shieldDuration < 180) { // 3 giây cuối
+            if (shieldDuration < 180) {
                 drawShield = (shieldBlinkCounter % 20 < 10);
             }
 
             if (drawShield) {
-                // Vẽ vòng tròn shield xung quanh player
                 g2d.setColor(new Color(100, 200, 255, 150));
                 g2d.setStroke(new BasicStroke(3));
                 int shieldRadius = (int)(Math.max(width, height) * 0.7);
                 g2d.drawOval(x + width/2 - shieldRadius, y + height/2 - shieldRadius,
                         shieldRadius * 2, shieldRadius * 2);
 
-                // Vẽ thêm vòng tròn bên trong
                 g2d.setColor(new Color(150, 220, 255, 80));
                 int innerRadius = (int)(shieldRadius * 0.85);
                 g2d.drawOval(x + width/2 - innerRadius, y + height/2 - innerRadius,
@@ -193,7 +174,6 @@ public class Player {
             }
         }
 
-        // Vẽ chỉ báo power-ups
         int indicatorY = y - 15;
         if (tripleShot) {
             g2d.setColor(Color.YELLOW);
@@ -206,57 +186,40 @@ public class Player {
     }
 
     public void moveLeft() {
-        if (x > 0) {
-            x -= speed;
-        }
+        if (x > 0) x -= speed;
     }
 
     public void moveRight() {
-        if (x < GamePanel.WIDTH - width) {
-            x += speed;
-        }
+        if (x < GamePanel.WIDTH - width) x += speed;
     }
 
     public void moveUp() {
-        if (y > GamePanel.HEIGHT / 2) { // Giới hạn không cho lên quá nửa màn hình
-            y -= speed;
-        }
+        if (y > GamePanel.HEIGHT / 2) y -= speed;
     }
 
     public void moveDown() {
-        if (y < GamePanel.HEIGHT - height - 10) {
-            y += speed;
-        }
+        if (y < GamePanel.HEIGHT - height - 10) y += speed;
     }
 
-    /**
-     *   Bắn đạn với power-ups và âm thanh
-     */
     public void shoot(java.util.List<Bullet> bullets) {
-        if (shootCooldown > 0) {
-            return; // Chưa thể bắn
-        }
+        if (shootCooldown > 0) return;
 
-        int centerX = x + width / 2 - 10; // Căn giữa đạn với tàu
+        int centerX = x + width / 2 - 10;
         int bulletY = y;
 
         if (tripleShot) {
-            // Bắn 3 viên: thẳng, chéo trái, chéo phải
-            bullets.add(new Bullet(centerX, bulletY, -1, 0, piercing)); // Thẳng
-            bullets.add(new Bullet(centerX - 15, bulletY, -1, -3, piercing)); // Chéo trái
-            bullets.add(new Bullet(centerX + 15, bulletY, -1, 3, piercing)); // Chéo phải
+            bullets.add(new Bullet(centerX, bulletY, -1, 0, piercing));
+            bullets.add(new Bullet(centerX - 15, bulletY, -1, -3, piercing));
+            bullets.add(new Bullet(centerX + 15, bulletY, -1, 3, piercing));
         } else {
-            // Bắn 1 viên bình thường
             if (piercing) {
                 bullets.add(new Bullet(centerX, bulletY, -1, 0, piercing));
             } else {
-                bullets.add(new Bullet(centerX, bulletY, -1)); // Constructor cũ
+                bullets.add(new Bullet(centerX, bulletY, -1));
             }
         }
 
-        // Phát âm thanh bắn
-        Assets.playShootSound();
-
+        assetManager.getSoundManager().playShootSound();
         shootCooldown = SHOOT_DELAY;
     }
 
@@ -281,15 +244,8 @@ public class Player {
         return new Rectangle(x, y, width, height);
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    // Getters
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
     public int getX() { return x; }
     public int getY() { return y; }
     public int getWidth() { return width; }

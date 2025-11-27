@@ -1,11 +1,10 @@
+// ==================== Enemy.java ====================
 package spaceinvaders;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Random;
 
-/**
- */
 public class Enemy {
     private int x, y;
     private int width = 50;
@@ -13,6 +12,7 @@ public class Enemy {
     private double speed;
     private boolean active = true;
     private int direction = 1;
+    private AssetManager assetManager;
 
     private EnemyType type;
     private int level;
@@ -20,8 +20,6 @@ public class Enemy {
     private int currentHP;
     private int damage;
     private int scoreValue;
-
-    //  THÊM BIẾN enemyVariant
     private int enemyVariant;
 
     private int shootCooldown = 0;
@@ -36,15 +34,15 @@ public class Enemy {
     private int bossShootAngle = 0;
     private int bossMovePattern = 0;
 
-    //  THÊM enemyVariant
     public Enemy(int x, int y, EnemyType type, int level,
                  double baseSpeed, int baseHP, int baseDamage, int enemyVariant) {
         this.x = x;
         this.y = y;
         this.type = type;
         this.level = level;
-        this.enemyVariant = enemyVariant; //  LƯU GIÁ TRỊ
+        this.enemyVariant = enemyVariant;
         this.random = new Random();
+        this.assetManager = AssetManager.getInstance();
 
         changeRandomDirection();
         randomMoveTimer = random.nextInt(RANDOM_MOVE_INTERVAL);
@@ -104,7 +102,6 @@ public class Enemy {
                 this.height = 250;
                 break;
         }
-
         this.currentHP = maxHP;
     }
 
@@ -195,9 +192,6 @@ public class Enemy {
         }
     }
 
-    /**
-     * Bắn đạn với enemyVariant thay vì level
-     */
     private void shootNormalPattern(List<Bullet> enemyBullets) {
         int bulletX = x + width / 2 - 10;
         int bulletY = y + height;
@@ -239,9 +233,6 @@ public class Enemy {
         }
     }
 
-    /**
-     * Boss bắn circular với enemyVariant
-     */
     private void shootCircularPattern(List<Bullet> enemyBullets) {
         int centerX = x + width / 2;
         int centerY = y + height / 2;
@@ -273,16 +264,13 @@ public class Enemy {
         }
     }
 
-    /**
-     *  Vẽ enemy/boss với enemyVariant
-     */
     public void draw(Graphics2D g2d) {
         if (!active) return;
 
         BufferedImage img = null;
 
         if (type == EnemyType.BOSS) {
-            img = Assets.getBossImage(enemyVariant);
+            img = assetManager.getBossImage(enemyVariant);
 
             if (img != null) {
                 Composite oldComposite = g2d.getComposite();
@@ -290,15 +278,14 @@ public class Enemy {
                 g2d.drawImage(img, x, y, width, height, null);
                 g2d.setComposite(oldComposite);
             } else {
-                // Fallback
                 g2d.setColor(Color.ORANGE);
                 g2d.fillRect(x, y, width, height);
                 g2d.setColor(Color.RED);
-                g2d.setStroke(new java.awt.BasicStroke(3));
+                g2d.setStroke(new BasicStroke(3));
                 g2d.drawRect(x, y, width, height);
             }
         } else {
-            img = Assets.getEnemyImage(enemyVariant); 
+            img = assetManager.getEnemyImage(enemyVariant);
 
             if (img != null) {
                 g2d.drawImage(img, x, y, width, height, null);
@@ -367,15 +354,8 @@ public class Enemy {
         return new Rectangle(x, y, width, height);
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    // Getters
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
     public int getX() { return x; }
     public int getY() { return y; }
     public int getWidth() { return width; }
@@ -388,7 +368,5 @@ public class Enemy {
     public int getDamage() { return damage; }
     public int getDirection() { return direction; }
     public void setDirection(int dir) { this.direction = dir; }
-
-    //  THÊM GETTER
     public int getEnemyVariant() { return enemyVariant; }
 }
