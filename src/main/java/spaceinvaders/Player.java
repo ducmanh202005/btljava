@@ -230,7 +230,7 @@ public class Player {
     }
 
     /**
-     * ⭐ UPDATED: Bắn đạn với power-ups và âm thanh
+     *   Bắn đạn với power-ups và âm thanh
      */
     public void shoot(java.util.List<Bullet> bullets) {
         if (shootCooldown > 0) {
@@ -254,7 +254,7 @@ public class Player {
             }
         }
 
-        // ⭐ Phát âm thanh bắn
+        // Phát âm thanh bắn
         Assets.playShootSound();
 
         shootCooldown = SHOOT_DELAY;

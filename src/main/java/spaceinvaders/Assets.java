@@ -23,6 +23,7 @@ public class Assets {
     public static BufferedImage startButtonImage;
     public static BufferedImage restartButtonImage;
     public static BufferedImage muteButtonImage;
+    public static BufferedImage titleImage;
 
     // Power-up items
     public static BufferedImage bulletPiercingImage;
@@ -40,7 +41,7 @@ public class Assets {
     public static Map<Integer, BufferedImage> bossBulletImages = new HashMap<>();
     public static Map<Integer, BufferedImage> backgroundImages = new HashMap<>();
 
-    // ⭐ NEW: Âm thanh mới
+    // Âm thanh mới
     public static Clip shootSound;        // /sounds/bullet.mp3
     public static Clip explosionSound;    // /sounds/explosion.mp3
     public static Clip backgroundMusic;   // /sounds/background.wav
@@ -73,7 +74,6 @@ public class Assets {
             // Load Start/End screen images
             try {
                 backGroundStartImage = loadImage("/images/backGroundStart.png");
-                System.out.println("[DEBUG] Loaded backGroundStart.png");
             } catch (Exception e) {
                 System.err.println("Không tìm thấy backGroundStart.png - using fallback");
                 backGroundStartImage = createFallbackImage(800, 600, java.awt.Color.DARK_GRAY);
@@ -81,7 +81,6 @@ public class Assets {
 
             try {
                 backGroundEndImage = loadImage("/images/backGroundEnd.png");
-                System.out.println("[DEBUG] Loaded backGroundEnd.png");
             } catch (Exception e) {
                 System.err.println("Không tìm thấy backGroundEnd.png - using fallback");
                 backGroundEndImage = createFallbackImage(800, 600, java.awt.Color.BLACK);
@@ -89,7 +88,6 @@ public class Assets {
 
             try {
                 startButtonImage = loadImage("/images/start.png");
-                System.out.println("[DEBUG] Loaded start.png");
             } catch (Exception e) {
                 System.err.println("Không tìm thấy start.png");
                 startButtonImage = null;
@@ -97,7 +95,6 @@ public class Assets {
 
             try {
                 restartButtonImage = loadImage("/images/reStart.png");
-                System.out.println("[DEBUG] Loaded reStart.png");
             } catch (Exception e) {
                 System.err.println("Không tìm thấy reStart.png");
                 restartButtonImage = null;
@@ -105,10 +102,16 @@ public class Assets {
 
             try {
                 muteButtonImage = loadImage("/images/mute.png");
-                System.out.println("[DEBUG] Loaded mute.png");
             } catch (Exception e) {
                 System.err.println("Không tìm thấy mute.png");
                 muteButtonImage = null;
+            }
+
+            try {
+                titleImage = loadImage("/images/title.png");
+            } catch (Exception e) {
+                System.err.println("Không tìm thấy title.png");
+                titleImage = null;
             }
 
             // Load power-up items
@@ -124,7 +127,6 @@ public class Assets {
             for (int i = 1; i <= 5; i++) {
                 try {
                     enemyImages.put(i, loadImage("/images/enemy" + i + ".png"));
-                    System.out.println("[DEBUG] Loaded enemy" + i + ".png");
                 } catch (Exception e) {
                     System.err.println("Không tìm thấy enemy" + i + ".png");
                 }
@@ -134,7 +136,6 @@ public class Assets {
             for (int i = 1; i <= 5; i++) {
                 try {
                     bossImages.put(i, loadImage("/images/boss" + i + ".png"));
-                    System.out.println("[DEBUG] Loaded boss" + i + ".png");
                 } catch (Exception e) {
                     System.err.println("Không tìm thấy boss" + i + ".png");
                 }
@@ -144,7 +145,6 @@ public class Assets {
             for (int i = 1; i <= 5; i++) {
                 try {
                     enemyBulletImages.put(i, loadImage("/images/bulletenemy" + i + ".png"));
-                    System.out.println("[DEBUG] Loaded bulletenemy" + i + ".png");
                 } catch (Exception e) {
                     System.err.println("Không tìm thấy bulletenemy" + i + ".png");
                 }
@@ -154,7 +154,6 @@ public class Assets {
             for (int i = 1; i <= 5; i++) {
                 try {
                     bossBulletImages.put(i, loadImage("/images/bulletboss" + i + ".png"));
-                    System.out.println("[DEBUG] Loaded bulletboss" + i + ".png");
                 } catch (Exception e) {
                     System.err.println("Không tìm thấy bulletboss" + i + ".png");
                 }
@@ -164,13 +163,10 @@ public class Assets {
             for (int i = 1; i <= 5; i++) {
                 try {
                     backgroundImages.put(i, loadImage("/images/backGround" + i + ".png"));
-                    System.out.println("[DEBUG] Loaded backGround" + i + ".png");
                 } catch (Exception e) {
                     System.err.println("Không tìm thấy backGround" + i + ".png");
                 }
             }
-
-            System.out.println("[DEBUG] ĐÃ LOAD THÀNH CÔNG TẤT CẢ HÌNH ẢNH!");
         } catch (Exception e) {
             System.err.println("Lỗi load hình ảnh: " + e.getMessage());
             createDefaultImages();
@@ -178,14 +174,13 @@ public class Assets {
     }
 
     /**
-     * ⭐ UPDATED: Load âm thanh với các file mới
+     *  UPDATED: Load âm thanh với các file mới
      */
     private static void loadSounds() {
         try {
             // Âm thanh player bắn (bullet.mp3)
             try {
                 shootSound = loadSound("/sounds/bullet.wav");
-                System.out.println("[SOUND] Loaded bullet.mp3");
             } catch (Exception e) {
                 System.err.println("Không tìm thấy bullet.mp3, thử bullet.wav");
                 try {
@@ -198,7 +193,6 @@ public class Assets {
             // Âm thanh nổ/enemy chết (explosion.mp3)
             try {
                 explosionSound = loadSound("/sounds/explosion.wav");
-                System.out.println("[SOUND] Loaded explosion.mp3");
             } catch (Exception e) {
                 System.err.println("Không tìm thấy explosion.mp3, thử explosion.wav");
                 try {
@@ -211,31 +205,27 @@ public class Assets {
             // Nhạc nền
             try {
                 backgroundMusic = loadSound("/sounds/background.wav");
-                System.out.println("[SOUND] Loaded background.wav");
             } catch (Exception e) {
                 System.err.println("Không load được background music");
             }
 
-            // ⭐ NEW: Button click sound
+            //  Button click sound
             try {
                 buttonSound = loadSound("/sounds/button.wav");
-                System.out.println("[SOUND] Loaded button.mp3");
             } catch (Exception e) {
                 System.err.println("Không tìm thấy button.mp3");
             }
 
-            // ⭐ NEW: Player death sound
+            // Player death sound
             try {
                 deathSound = loadSound("/sounds/death.wav");
-                System.out.println("[SOUND] Loaded death.mp3");
             } catch (Exception e) {
                 System.err.println("Không tìm thấy death.mp3");
             }
 
-            // ⭐ NEW: Game over sound
+            // Game over sound
             try {
                 gameOverSound = loadSound("/sounds/gameOver.wav");
-                System.out.println("[SOUND] Loaded gameOver.mp3");
             } catch (Exception e) {
                 System.err.println("Không tìm thấy gameOver.mp3");
             }
@@ -385,7 +375,7 @@ public class Assets {
     }
 
     /**
-     * ⭐ NEW: Phát âm thanh button click
+     * Phát âm thanh button click
      */
     public static void playButtonSound() {
         if (soundEnabled && buttonSound != null) {
@@ -395,7 +385,7 @@ public class Assets {
     }
 
     /**
-     * ⭐ NEW: Phát âm thanh player chết
+     *  Phát âm thanh player chết
      */
     public static void playDeathSound() {
         if (soundEnabled && deathSound != null) {
@@ -405,7 +395,7 @@ public class Assets {
     }
 
     /**
-     * ⭐ NEW: Phát âm thanh game over
+     * Phát âm thanh game over
      */
     public static void playGameOverSound() {
         if (soundEnabled && gameOverSound != null) {

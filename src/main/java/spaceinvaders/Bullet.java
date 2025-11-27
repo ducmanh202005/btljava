@@ -93,7 +93,7 @@ public class Bullet {
     }
     
     /**
-     * ★ Set wave info (dùng khi tạo bullet từ constructor cũ)
+     * Set wave info (dùng khi tạo bullet từ constructor cũ)
      */
     public void setWaveInfo(int wave, boolean isBoss) {
         this.wave = wave;
@@ -141,7 +141,7 @@ public class Bullet {
             g2d.setColor(new Color(0, 200, 255, 100));
             g2d.fillRect((int)x, (int)y + height, width, 5);
         } else if (direction > 0) {
-            // ★ Đạn enemy/boss (direction > 0 = đi xuống)
+            // Đạn enemy/boss (direction > 0 = đi xuống)
             BufferedImage bulletImg = null;
             
             if (isBoss) {

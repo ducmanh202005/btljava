@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * WaveManager - FIXED - Mỗi wave có enemy và boss riêng, lặp lại sau 5 wave
+ * WaveManager  Mỗi wave có enemy và boss riêng, lặp lại sau 5 wave
  */
 public class WaveManager {
     private int currentWave = 1;
@@ -61,7 +61,7 @@ public class WaveManager {
     }
 
     /**
-     * ⭐ FIXED: Spawn enemies cho wave hiện tại
+     *  Spawn enemies cho wave hiện tại
      */
     public void spawnWave(List<Enemy> enemies, int screenWidth, int screenHeight) {
         if (enemiesSpawned < enemiesPerWave) {
@@ -84,7 +84,7 @@ public class WaveManager {
                     int x = startX + col * spacingX;
                     int y = startY + row * spacingY;
 
-                    // ⭐ FIXED: Thêm tham số enemyVariant vào constructor
+                    //  Thêm tham số enemyVariant vào constructor
                     Enemy enemy = new Enemy(x, y, EnemyType.NORMAL, currentWave,
                             baseEnemySpeed, baseEnemyHP, baseEnemyDamage, enemyVariant);
                     enemies.add(enemy);
@@ -123,7 +123,7 @@ public class WaveManager {
     }
 
     /**
-     * ⭐ FIXED: Spawn boss với variant tương ứng wave
+     *  Spawn boss với variant tương ứng wave
      */
     private void spawnBoss(List<Enemy> enemies, int screenWidth, int screenHeight) {
         bossSpawnRequested = true;
@@ -137,7 +137,7 @@ public class WaveManager {
         double bossSpeed = baseEnemySpeed * 0.4;
         int bossDamage = baseEnemyDamage * 4 + (currentWave / 2);
 
-        // ⭐ FIXED: Thêm tham số bossVariant vào constructor
+        //  Thêm tham số bossVariant vào constructor
         Enemy boss = new Enemy(x, y, EnemyType.BOSS, currentWave,
                 bossSpeed, bossHP, bossDamage, bossVariant);
         enemies.add(boss);

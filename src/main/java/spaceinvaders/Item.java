@@ -7,12 +7,12 @@ import java.awt.*;
 public class Item {
     // Các loại itemå
     public enum ItemType {
-        HEALTH,       // Hồi máu (cũ)
-        POWERUP,      // Power-up chung (cũ)
-        SCORE,        // Điểm (cũ)
-        TRIPLE_SHOT,  // Bắn 3 tia (mới)
-        PIERCING,     // Đạn xuyên (mới)
-        SHIELD        // Khiên bảo vệ (mới)
+        HEALTH,       // Hồi máu 
+        POWERUP,      // Power-up chung 
+        SCORE,        // Điểm 
+        TRIPLE_SHOT,  // Bắn 3 tia 
+        PIERCING,     // Đạn xuyên 
+        SHIELD        // Khiên bảo vệ 
     }
 
     private int x, y;

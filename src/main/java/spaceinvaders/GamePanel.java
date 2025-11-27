@@ -1,11 +1,11 @@
 package spaceinvaders;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -108,7 +108,7 @@ public class GamePanel extends JPanel implements ActionListener {
         int buttonWidth = 200;
         int buttonHeight = 80;
         int startX = WIDTH / 2 - buttonWidth / 2;
-        int startY = HEIGHT / 2 - 20;
+        int startY = HEIGHT / 2 + 50;  // Đẩy xuống dưới title
 
         if (Assets.startButtonImage != null) {
             startButton = new Button(startX, startY, buttonWidth, buttonHeight, Assets.startButtonImage);
@@ -116,14 +116,13 @@ public class GamePanel extends JPanel implements ActionListener {
             startButton = new Button(startX, startY, buttonWidth, buttonHeight, "START");
         }
 
-        int muteSize = 60;
-        int muteX = WIDTH - muteSize - 20;
-        int muteY = 20;
+        int muteX = WIDTH / 2 - buttonWidth / 2;
+        int muteY = startY + buttonHeight + 20;  // Ngay dưới nút START
 
         if (Assets.muteButtonImage != null) {
-            muteButton = new Button(muteX, muteY, muteSize, muteSize, Assets.muteButtonImage);
+            muteButton = new Button(muteX, muteY, buttonWidth, buttonHeight, Assets.muteButtonImage);
         } else {
-            muteButton = new Button(muteX, muteY, muteSize, muteSize, "MUTE");
+            muteButton = new Button(muteX, muteY, buttonWidth, buttonHeight, "MUTE");
         }
 
         int restartX = WIDTH / 2 - buttonWidth / 2;
@@ -541,33 +540,39 @@ public class GamePanel extends JPanel implements ActionListener {
             g2d.fillRect(0, 0, WIDTH, HEIGHT);
         }
 
-        g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Arial", Font.BOLD, 48));
-        String title = "SPACE INVADERS";
-        FontMetrics fm = g2d.getFontMetrics();
-        int x = (WIDTH - fm.stringWidth(title)) / 2;
-        int y = HEIGHT / 3;
+        // Vẽ tiêu đề - dùng ảnh nếu có, không thì vẽ text
+        if (Assets.titleImage != null) {
+            int titleWidth = 700;
+            int titleHeight = 160;
+            int x = (WIDTH - titleWidth) / 2;
+            int y = 180;  // Ngay sát trên nút START
+            g2d.drawImage(Assets.titleImage, x, y, titleWidth, titleHeight, null);
+        } else {
+            g2d.setColor(Color.WHITE);
+            g2d.setFont(new Font("Arial", Font.BOLD, 48));
+            String title = "SPACE INVADERS";
+            FontMetrics fm = g2d.getFontMetrics();
+            int x = (WIDTH - fm.stringWidth(title)) / 2;
+            int y = HEIGHT / 3;
 
-        g2d.setColor(new Color(0, 0, 0, 150));
-        g2d.drawString(title, x + 3, y + 3);
+            g2d.setColor(new Color(0, 0, 0, 150));
+            g2d.drawString(title, x + 3, y + 3);
 
-        g2d.setColor(new Color(255, 215, 0));
-        g2d.drawString(title, x, y);
+            g2d.setColor(new Color(255, 215, 0));
+            g2d.drawString(title, x, y);
+        }
 
         startButton.draw(g2d);
         muteButton.draw(g2d);
 
+        // Hiển thị trạng thái sound ngay dưới nút mute
         g2d.setFont(new Font("Arial", Font.PLAIN, 14));
         g2d.setColor(Color.WHITE);
-        String soundStatus = Assets.isSoundEnabled() ? "Sound: ON" : "Sound: OFF";
-        g2d.drawString(soundStatus, WIDTH - 100, 90);
-
-        g2d.setFont(new Font("Arial", Font.PLAIN, 16));
-        g2d.setColor(new Color(200, 200, 200));
-        String hint = "Press ENTER to Start";
-        fm = g2d.getFontMetrics();
-        x = (WIDTH - fm.stringWidth(hint)) / 2;
-        g2d.drawString(hint, x, HEIGHT - 50);
+        String soundStatus = Assets.isSoundEnabled() ? "ON" : "OFF";
+        FontMetrics fmSound = g2d.getFontMetrics();
+        int soundX = WIDTH / 2 - fmSound.stringWidth(soundStatus) / 2;
+        int soundY = HEIGHT / 2 + 50 + 80 + 20 + 60 + 15;  // Dưới nút mute
+        g2d.drawString(soundStatus, soundX, soundY);
     }
 
     private void drawEndScreen(Graphics2D g2d) {
@@ -584,54 +589,48 @@ public class GamePanel extends JPanel implements ActionListener {
 
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.BOLD, 56));
-        String gameOverText = "GAME OVER";
-        FontMetrics fm = g2d.getFontMetrics();
-        int x = (WIDTH - fm.stringWidth(gameOverText)) / 2;
-        int y = HEIGHT / 3;
+        // String gameOverText = "GAME OVER";
+        // FontMetrics fm = g2d.getFontMetrics();
+        // int x = (WIDTH - fm.stringWidth(gameOverText)) / 2;
+        // int y = HEIGHT / 3;
 
-        g2d.setColor(new Color(0, 0, 0, 150));
-        g2d.drawString(gameOverText, x + 3, y + 3);
+        // g2d.setColor(new Color(0, 0, 0, 150));
+        // g2d.drawString(gameOverText, x + 3, y + 3);
 
-        g2d.setColor(new Color(255, 50, 50));
-        g2d.drawString(gameOverText, x, y);
+        // g2d.setColor(new Color(255, 50, 50));
+        // g2d.drawString(gameOverText, x, y);
 
-        g2d.setFont(new Font("Arial", Font.BOLD, 28));
-        g2d.setColor(Color.WHITE);
+        // g2d.setFont(new Font("Arial", Font.BOLD, 28));
+        // g2d.setColor(Color.WHITE);
         String scoreText = "Final Score: " + score;
-        fm = g2d.getFontMetrics();
-        x = (WIDTH - fm.stringWidth(scoreText)) / 2;
-        y += 70;
+       FontMetrics fm = g2d.getFontMetrics();
+        int x = (WIDTH - fm.stringWidth(scoreText)) / 2;
+       int y =  HEIGHT /3 + 70;
         g2d.drawString(scoreText, x, y);
 
-        g2d.setFont(new Font("Arial", Font.PLAIN, 20));
-        g2d.setColor(new Color(200, 200, 200));
-        String waveText = "Wave Reached: " + waveManager.getCurrentWave();
-        fm = g2d.getFontMetrics();
-        x = (WIDTH - fm.stringWidth(waveText)) / 2;
-        y += 40;
-        g2d.drawString(waveText, x, y);
+        // g2d.setFont(new Font("Arial", Font.PLAIN, 20));
+        // g2d.setColor(new Color(200, 200, 200));
+        // String waveText = "Wave Reached: " + waveManager.getCurrentWave();
+        // fm = g2d.getFontMetrics();
+        // x = (WIDTH - fm.stringWidth(waveText)) / 2;
+        // y += 40;
+        // g2d.drawString(waveText, x, y);
 
         restartButton.draw(g2d);
-        muteButton.draw(g2d);
 
-        g2d.setFont(new Font("Arial", Font.PLAIN, 14));
-        g2d.setColor(Color.WHITE);
-        String soundStatus = Assets.isSoundEnabled() ? "Sound: ON" : "Sound: OFF";
-        g2d.drawString(soundStatus, WIDTH - 100, 90);
+        // g2d.setFont(new Font("Arial", Font.PLAIN, 18));
+        // g2d.setColor(new Color(220, 220, 220));
+        // String escText = "Bấm ESC để trở về giao diện bắt đầu";
+        // fm = g2d.getFontMetrics();
+        // x = (WIDTH - fm.stringWidth(escText)) / 2;
+        // g2d.drawString(escText, x, HEIGHT - 80);
 
-        g2d.setFont(new Font("Arial", Font.PLAIN, 18));
-        g2d.setColor(new Color(220, 220, 220));
-        String escText = "Bấm ESC để trở về giao diện bắt đầu";
-        fm = g2d.getFontMetrics();
-        x = (WIDTH - fm.stringWidth(escText)) / 2;
-        g2d.drawString(escText, x, HEIGHT - 80);
-
-        g2d.setFont(new Font("Arial", Font.PLAIN, 16));
-        g2d.setColor(new Color(180, 180, 180));
-        String enterText = "Press ENTER to Restart";
-        fm = g2d.getFontMetrics();
-        x = (WIDTH - fm.stringWidth(enterText)) / 2;
-        g2d.drawString(enterText, x, HEIGHT - 50);
+        // g2d.setFont(new Font("Arial", Font.PLAIN, 16));
+        // g2d.setColor(new Color(180, 180, 180));
+        // String enterText = "Press ENTER to Restart";
+        // fm = g2d.getFontMetrics();
+        // x = (WIDTH - fm.stringWidth(enterText)) / 2;
+        // g2d.drawString(enterText, x, HEIGHT - 50);
     }
 
     private void drawMenu(Graphics2D g2d) {
@@ -644,12 +643,12 @@ public class GamePanel extends JPanel implements ActionListener {
         int y = HEIGHT / 2 - 50;
         g2d.drawString(title, x, y);
 
-        g2d.setFont(gameFont);
-        String startText = "Press ENTER to Start";
-        fm = g2d.getFontMetrics();
-        x = (WIDTH - fm.stringWidth(startText)) / 2;
-        y += 80;
-        g2d.drawString(startText, x, y);
+        // g2d.setFont(gameFont);
+        // String startText = "Press ENTER to Start";
+        // fm = g2d.getFontMetrics();
+        // x = (WIDTH - fm.stringWidth(startText)) / 2;
+        // y += 80;
+        // g2d.drawString(startText, x, y);
     }
 
     private void drawGame(Graphics2D g2d) {
@@ -679,13 +678,7 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         drawUI(g2d);
-        drawPowerUpHUD(g2d);
-
-        muteButton.draw(g2d);
-        g2d.setFont(new Font("Arial", Font.PLAIN, 12));
-        g2d.setColor(Color.WHITE);
-        String soundStatus = Assets.isSoundEnabled() ? "ON" : "OFF";
-        g2d.drawString(soundStatus, WIDTH - 50, 90);
+        // drawPowerUpHUD(g2d);
     }
 
     private void drawUI(Graphics2D g2d) {
@@ -697,32 +690,32 @@ public class GamePanel extends JPanel implements ActionListener {
         g2d.drawString("Wave: " + waveManager.getCurrentWave(), 10, 75);
     }
 
-    private void drawPowerUpHUD(Graphics2D g2d) {
-        int hudX = WIDTH - 200;
-        int hudY = 120;
+    // private void drawPowerUpHUD(Graphics2D g2d) {
+    //     int hudX = WIDTH - 200;
+    //     int hudY = 120;
 
-        g2d.setFont(new Font("Arial", Font.BOLD, 14));
+    //     g2d.setFont(new Font("Arial", Font.BOLD, 14));
 
-        if (player.hasTripleShot()) {
-            g2d.setColor(Color.YELLOW);
-            int seconds = player.getTripleShotDuration() / 60;
-            g2d.drawString("⚡ TRIPLE: " + seconds + "s", hudX, hudY);
-            hudY += 25;
-        }
+    //     if (player.hasTripleShot()) {
+    //         g2d.setColor(Color.YELLOW);
+    //         int seconds = player.getTripleShotDuration() / 60;
+    //         g2d.drawString("TRIPLE: " + seconds + "s", hudX, hudY);
+    //         hudY += 25;
+    //     }
 
-        if (player.hasPiercing()) {
-            g2d.setColor(Color.CYAN);
-            int seconds = player.getPiercingDuration() / 60;
-            g2d.drawString("⚡ PIERCE: " + seconds + "s", hudX, hudY);
-            hudY += 25;
-        }
+    //     if (player.hasPiercing()) {
+    //         g2d.setColor(Color.CYAN);
+    //         int seconds = player.getPiercingDuration() / 60;
+    //         g2d.drawString("PIERCE: " + seconds + "s", hudX, hudY);
+    //         hudY += 25;
+    //     }
 
-        if (player.hasShield()) {
-            g2d.setColor(new Color(100, 200, 255));
-            int seconds = player.getShieldDuration() / 60;
-            g2d.drawString("🛡 SHIELD: " + seconds + "s", hudX, hudY);
-        }
-    }
+    //     if (player.hasShield()) {
+    //         g2d.setColor(new Color(100, 200, 255));
+    //         int seconds = player.getShieldDuration() / 60;
+    //         g2d.drawString("SHIELD: " + seconds + "s", hudX, hudY);
+    //     }
+    // }
 
     private void drawPauseScreen(Graphics2D g2d) {
         g2d.setColor(new Color(0, 0, 0, 128));
@@ -748,23 +741,23 @@ public class GamePanel extends JPanel implements ActionListener {
         g2d.setColor(Color.WHITE);
         g2d.setFont(bigFont);
 
-        String gameOverText = "GAME OVER";
-        FontMetrics fm = g2d.getFontMetrics();
-        int x = (WIDTH - fm.stringWidth(gameOverText)) / 2;
-        int y = HEIGHT / 2 - 50;
-        g2d.drawString(gameOverText, x, y);
+        // String gameOverText = "GAME OVER";
+        // FontMetrics fm = g2d.getFontMetrics();
+        // int x = (WIDTH - fm.stringWidth(gameOverText)) / 2;
+        // int y = HEIGHT / 2 - 50;
+        // g2d.drawString(gameOverText, x, y);
 
         g2d.setFont(gameFont);
         String scoreText = "Final Score: " + score;
-        fm = g2d.getFontMetrics();
-        x = (WIDTH - fm.stringWidth(scoreText)) / 2;
-        y += 50;
+        FontMetrics fm = g2d.getFontMetrics();
+        int x = (WIDTH - fm.stringWidth(scoreText)) / 2;
+        int y = HEIGHT / 2 ;
         g2d.drawString(scoreText, x, y);
 
-        String restartText = "Press ENTER to Restart";
-        fm = g2d.getFontMetrics();
-        x = (WIDTH - fm.stringWidth(restartText)) / 2;
-        y += 30;
-        g2d.drawString(restartText, x, y);
+        // String restartText = "Press ENTER to Restart";
+        // fm = g2d.getFontMetrics();
+        // x = (WIDTH - fm.stringWidth(restartText)) / 2;
+        // y += 30;
+        // g2d.drawString(restartText, x, y);
     }
 }

@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "spaceinvaders.Main",
+            "projectName": "btljava_d783fd46"
+        },
+        {
+            "type": "java",
             "name": "Space Invaders",
             "request": "launch",
             "mainClass": "spaceinvaders.Main",

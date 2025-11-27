@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Enemy - FIXED với wave-specific images và bullets
  */
 public class Enemy {
     private int x, y;
@@ -37,7 +36,7 @@ public class Enemy {
     private int bossShootAngle = 0;
     private int bossMovePattern = 0;
 
-    //  CONSTRUCTOR ĐÃ SỬA - THÊM enemyVariant
+    //  THÊM enemyVariant
     public Enemy(int x, int y, EnemyType type, int level,
                  double baseSpeed, int baseHP, int baseDamage, int enemyVariant) {
         this.x = x;
@@ -197,7 +196,7 @@ public class Enemy {
     }
 
     /**
-     *  FIXED: Bắn đạn với enemyVariant thay vì level
+     * Bắn đạn với enemyVariant thay vì level
      */
     private void shootNormalPattern(List<Bullet> enemyBullets) {
         int bulletX = x + width / 2 - 10;
@@ -241,7 +240,7 @@ public class Enemy {
     }
 
     /**
-     *  FIXED: Boss bắn circular với enemyVariant
+     * Boss bắn circular với enemyVariant
      */
     private void shootCircularPattern(List<Bullet> enemyBullets) {
         int centerX = x + width / 2;
@@ -275,7 +274,7 @@ public class Enemy {
     }
 
     /**
-     *  FIXED: Vẽ enemy/boss với enemyVariant
+     *  Vẽ enemy/boss với enemyVariant
      */
     public void draw(Graphics2D g2d) {
         if (!active) return;
@@ -283,7 +282,7 @@ public class Enemy {
         BufferedImage img = null;
 
         if (type == EnemyType.BOSS) {
-            img = Assets.getBossImage(enemyVariant); // ⭐ ĐÃ SỬA
+            img = Assets.getBossImage(enemyVariant);
 
             if (img != null) {
                 Composite oldComposite = g2d.getComposite();
@@ -299,7 +298,7 @@ public class Enemy {
                 g2d.drawRect(x, y, width, height);
             }
         } else {
-            img = Assets.getEnemyImage(enemyVariant); // ⭐ ĐÃ SỬA
+            img = Assets.getEnemyImage(enemyVariant); 
 
             if (img != null) {
                 g2d.drawImage(img, x, y, width, height, null);
