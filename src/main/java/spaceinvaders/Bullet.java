@@ -30,7 +30,6 @@ public class Bullet {
         this.piercing = false;
         this.assetManager = AssetManager.getInstance();
 
-        // Scale kích thước và tốc độ
         this.width = GamePanel.scaled(20);
         this.height = GamePanel.scaled(30);
         this.speed = GamePanel.scaled(7);

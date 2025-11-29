@@ -3,9 +3,6 @@ package spaceinvaders;
 import java.util.List;
 import java.util.Random;
 
-/**
- * WaveManager - Full screen version với dynamic positioning
- */
 public class WaveManager {
     private int currentWave = 1;
     private int enemiesSpawned = 0;
@@ -57,7 +54,6 @@ public class WaveManager {
             int enemiesToSpawn = enemiesPerWave - enemiesSpawned;
             int enemyVariant = getEnemyVariantForWave();
 
-            // Tính toán số cột và hàng dựa trên kích thước màn hình
             int maxCols = Math.min(10, (screenWidth - GamePanel.scaled(160)) / GamePanel.scaled(70));
             int cols = Math.min(maxCols, enemiesToSpawn);
             int rows = (int)Math.ceil((double)enemiesToSpawn / cols);
@@ -114,7 +110,6 @@ public class WaveManager {
 
         int bossVariant = getEnemyVariantForWave();
 
-        // Boss xuất hiện ở giữa màn hình với kích thước scaled
         int bossWidth = GamePanel.scaled(250);
         int x = screenWidth / 2 - bossWidth / 2;
         int y = GamePanel.scaled(60);

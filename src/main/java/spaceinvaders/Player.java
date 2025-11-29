@@ -2,9 +2,6 @@ package spaceinvaders;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-/**
- * Lớp Player - Full screen version với dynamic scaling
- */
 public class Player {
     private int x, y;
     private int width;
@@ -40,7 +37,6 @@ public class Player {
         this.y = y;
         this.assetManager = AssetManager.getInstance();
 
-        // Scale kích thước và tốc độ theo màn hình
         this.width = GamePanel.scaled(80);
         this.height = GamePanel.scaled(80);
         this.speed = GamePanel.scaled(5);

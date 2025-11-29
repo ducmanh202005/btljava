@@ -22,7 +22,6 @@ public class Item {
         this.type = type;
         this.assetManager = AssetManager.getInstance();
 
-        // Scale kích thước và tốc độ
         this.width = GamePanel.scaled(30);
         this.height = GamePanel.scaled(30);
         this.speed = GamePanel.scaled(3);

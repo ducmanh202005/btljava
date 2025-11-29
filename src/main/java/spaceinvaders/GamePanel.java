@@ -11,15 +11,10 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.*;
 
-/**
- * GamePanel - FULL SCREEN VERSION với dynamic scaling
- */
 public class GamePanel extends JPanel implements ActionListener {
-    // Dynamic screen dimensions
     public static int WIDTH;
     public static int HEIGHT;
 
-    // Scale factor cho các đối tượng (public để các class khác truy cập)
     public static double SCALE_FACTOR = 1.0;
 
     private Timer gameTimer;
@@ -53,12 +48,10 @@ public class GamePanel extends JPanel implements ActionListener {
     private int mouseY = 0;
 
     public GamePanel() {
-        // Lấy kích thước màn hình
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         WIDTH = (int) screenSize.getWidth();
         HEIGHT = (int) screenSize.getHeight();
 
-        // Tính scale factor (base: 800x600)
         SCALE_FACTOR = Math.min(WIDTH / 800.0, HEIGHT / 600.0);
 
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -503,7 +496,7 @@ public class GamePanel extends JPanel implements ActionListener {
         BufferedImage newBackground = assetManager.getBackgroundImage(currentWave);
         if (newBackground != null) {
             assetManager.setBackGroundImage(newBackground);
-            System.out.println("[BACKGROUND] Đổi background cho wave " + currentWave);
+            System.out.println("[BACKGROUND] Äá»•i background cho wave " + currentWave);
         }
     }
 
@@ -689,7 +682,6 @@ public class GamePanel extends JPanel implements ActionListener {
         g2d.drawString(scoreText, x, y);
     }
 
-    // Helper method để scale giá trị theo màn hình
     public static int scaled(int value) {
         return (int) (value * SCALE_FACTOR);
     }
