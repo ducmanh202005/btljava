@@ -1,44 +1,37 @@
-// ==================== Player.java ====================
 package spaceinvaders;
 import java.awt.*;
-import java.awt.image.BufferedImage; // ⭐ THÊM IMPORT NÀY
+import java.awt.image.BufferedImage;
 
 /**
- * Lớp Player - tàu người chơi với power-ups và âm thanh
- * REFACTORED: Sử dụng AssetManager thay vì Assets static
+ * Lớp Player - Full screen version với dynamic scaling
  */
 public class Player {
     private int x, y;
-    private int width = 80;
-    private int height = 80;
-    private int speed = 5;
+    private int width;
+    private int height;
+    private int speed;
     private boolean active = true;
 
-    // Asset manager reference
     private AssetManager assetManager;
 
-    // Invincibility frames - nhấp nháy khi bị trúng
     private boolean invincible = false;
     private int invincibilityFrames = 0;
-    private static final int INVINCIBILITY_DURATION = 120;
+    private static final int INVINCIBILITY_DURATION = 10000;
     private int blinkCounter = 0;
 
-    // Power-up states
     private boolean tripleShot = false;
     private int tripleShotDuration = 0;
-    private static final int TRIPLE_SHOT_TIME = 600;
+    private static final int TRIPLE_SHOT_TIME = 1000;
 
     private boolean piercing = false;
     private int piercingDuration = 0;
-    private static final int PIERCING_TIME = 600;
+    private static final int PIERCING_TIME = 1000;
 
-    // Shield system
     private boolean hasShield = false;
     private int shieldDuration = 0;
-    private static final int SHIELD_TIME = 900;
+    private static final int SHIELD_TIME = 10000;
     private int shieldBlinkCounter = 0;
 
-    // Shoot cooldown
     private int shootCooldown = 0;
     private static final int SHOOT_DELAY = 10;
 
@@ -46,6 +39,11 @@ public class Player {
         this.x = x;
         this.y = y;
         this.assetManager = AssetManager.getInstance();
+
+        // Scale kích thước và tốc độ theo màn hình
+        this.width = GamePanel.scaled(80);
+        this.height = GamePanel.scaled(80);
+        this.speed = GamePanel.scaled(5);
     }
 
     public void update() {
@@ -132,7 +130,7 @@ public class Player {
 
     public void draw(Graphics2D g2d) {
         BufferedImage playerImg = assetManager.getPlayerImage();
-        
+
         if (invincible) {
             if (blinkCounter % 10 < 5) {
                 if (playerImg != null) {
@@ -162,7 +160,7 @@ public class Player {
 
             if (drawShield) {
                 g2d.setColor(new Color(100, 200, 255, 150));
-                g2d.setStroke(new BasicStroke(3));
+                g2d.setStroke(new BasicStroke(GamePanel.scaled(3)));
                 int shieldRadius = (int)(Math.max(width, height) * 0.7);
                 g2d.drawOval(x + width/2 - shieldRadius, y + height/2 - shieldRadius,
                         shieldRadius * 2, shieldRadius * 2);
@@ -174,14 +172,15 @@ public class Player {
             }
         }
 
-        int indicatorY = y - 15;
+        int indicatorY = y - GamePanel.scaled(15);
+        int indicatorHeight = GamePanel.scaled(5);
         if (tripleShot) {
             g2d.setColor(Color.YELLOW);
-            g2d.fillRect(x, indicatorY, width/3 - 2, 5);
+            g2d.fillRect(x, indicatorY, width/3 - 2, indicatorHeight);
         }
         if (piercing) {
             g2d.setColor(Color.CYAN);
-            g2d.fillRect(x + width/3 + 1, indicatorY, width/3 - 2, 5);
+            g2d.fillRect(x + width/3 + 1, indicatorY, width/3 - 2, indicatorHeight);
         }
     }
 
@@ -198,19 +197,21 @@ public class Player {
     }
 
     public void moveDown() {
-        if (y < GamePanel.HEIGHT - height - 10) y += speed;
+        if (y < GamePanel.HEIGHT - height - GamePanel.scaled(10)) y += speed;
     }
 
     public void shoot(java.util.List<Bullet> bullets) {
         if (shootCooldown > 0) return;
 
-        int centerX = x + width / 2 - 10;
+        int bulletWidth = GamePanel.scaled(20);
+        int centerX = x + width / 2 - bulletWidth / 2;
         int bulletY = y;
 
         if (tripleShot) {
+            int spreadX = GamePanel.scaled(15);
             bullets.add(new Bullet(centerX, bulletY, -1, 0, piercing));
-            bullets.add(new Bullet(centerX - 15, bulletY, -1, -3, piercing));
-            bullets.add(new Bullet(centerX + 15, bulletY, -1, 3, piercing));
+            bullets.add(new Bullet(centerX - spreadX, bulletY, -1, GamePanel.scaled(-3), piercing));
+            bullets.add(new Bullet(centerX + spreadX, bulletY, -1, GamePanel.scaled(3), piercing));
         } else {
             if (piercing) {
                 bullets.add(new Bullet(centerX, bulletY, -1, 0, piercing));
@@ -224,8 +225,8 @@ public class Player {
     }
 
     public void reset() {
-        x = GamePanel.WIDTH / 2 - 40;
-        y = GamePanel.HEIGHT - 130;
+        x = GamePanel.WIDTH / 2 - width / 2;
+        y = GamePanel.HEIGHT - GamePanel.scaled(130);
         active = true;
         invincible = false;
         invincibilityFrames = 0;

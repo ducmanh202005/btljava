@@ -16,6 +16,7 @@ public class Collision {
     /**
      * Kiểm tra va chạm giữa đạn và enemy
      */
+
     public static boolean checkBulletEnemyCollision(Bullet bullet, Enemy enemy) {
         if (bullet == null || enemy == null || !bullet.isActive() || !enemy.isActive()) {
             return false;
@@ -90,7 +91,6 @@ public class Collision {
         double actualDistance = Math.sqrt(dx * dx + dy * dy);
         return actualDistance <= distance;
     }
-    
     /**
      * Kiểm tra va chạm giữa hai hình tròn
      */

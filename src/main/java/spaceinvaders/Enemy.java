@@ -1,4 +1,3 @@
-// ==================== Enemy.java ====================
 package spaceinvaders;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -7,8 +6,8 @@ import java.util.Random;
 
 public class Enemy {
     private int x, y;
-    private int width = 50;
-    private int height = 50;
+    private int width;
+    private int height;
     private double speed;
     private boolean active = true;
     private int direction = 1;
@@ -70,36 +69,36 @@ public class Enemy {
     private void calculateStats(double baseSpeed, int baseHP, int baseDamage) {
         switch (type) {
             case NORMAL:
-                this.speed = baseSpeed;
+                this.speed = GamePanel.scaledDouble(baseSpeed);
                 this.maxHP = baseHP;
                 this.damage = baseDamage;
                 this.scoreValue = 10 * level;
-                this.width = 70;
-                this.height = 70;
+                this.width = GamePanel.scaled(70);
+                this.height = GamePanel.scaled(70);
                 break;
             case FAST:
-                this.speed = baseSpeed * 1.8;
+                this.speed = GamePanel.scaledDouble(baseSpeed * 1.8);
                 this.maxHP = Math.max(1, baseHP / 2);
                 this.damage = baseDamage;
                 this.scoreValue = 15 * level;
-                this.width = 40;
-                this.height = 40;
+                this.width = GamePanel.scaled(40);
+                this.height = GamePanel.scaled(40);
                 break;
             case SHOOTING:
-                this.speed = baseSpeed * 0.7;
+                this.speed = GamePanel.scaledDouble(baseSpeed * 0.7);
                 this.maxHP = baseHP * 2;
                 this.damage = baseDamage * 2;
                 this.scoreValue = 25 * level;
-                this.width = 50;
-                this.height = 50;
+                this.width = GamePanel.scaled(50);
+                this.height = GamePanel.scaled(50);
                 break;
             case BOSS:
-                this.speed = baseSpeed * 0.4;
+                this.speed = GamePanel.scaledDouble(baseSpeed * 0.4);
                 this.maxHP = baseHP * 2 + (level * 2);
                 this.damage = baseDamage * 4 + (level / 2);
                 this.scoreValue = 200 * level;
-                this.width = 250;
-                this.height = 250;
+                this.width = GamePanel.scaled(250);
+                this.height = GamePanel.scaled(250);
                 break;
         }
         this.currentHP = maxHP;
@@ -114,11 +113,11 @@ public class Enemy {
     private void move() {
         if (type == EnemyType.BOSS) {
             bossMovePattern++;
-            double patternX = Math.sin(bossMovePattern * 0.05) * 2;
+            double patternX = Math.sin(bossMovePattern * 0.05) * 2 * GamePanel.SCALE_FACTOR;
             x += (int)(speed * direction) + (int)patternX;
 
             if (bossMovePattern % 60 == 0) {
-                y += 1;
+                y += GamePanel.scaled(1);
             }
 
             if (x <= 0 || x >= GamePanel.WIDTH - width) {
@@ -127,7 +126,7 @@ public class Enemy {
 
             if (x < 0) x = 0;
             if (x > GamePanel.WIDTH - width) x = GamePanel.WIDTH - width;
-            if (y > GamePanel.HEIGHT - 150) y = GamePanel.HEIGHT - 150;
+            if (y > GamePanel.HEIGHT - GamePanel.scaled(150)) y = GamePanel.HEIGHT - GamePanel.scaled(150);
         } else {
             randomMoveTimer++;
 
@@ -162,8 +161,8 @@ public class Enemy {
             if (y <= 0) {
                 y = 0;
                 moveDirectionY = 1;
-            } else if (y >= GamePanel.HEIGHT - 200) {
-                y = GamePanel.HEIGHT - 200;
+            } else if (y >= GamePanel.HEIGHT - GamePanel.scaled(200)) {
+                y = GamePanel.HEIGHT - GamePanel.scaled(200);
                 moveDirectionY = -1;
             }
         }
@@ -193,7 +192,8 @@ public class Enemy {
     }
 
     private void shootNormalPattern(List<Bullet> enemyBullets) {
-        int bulletX = x + width / 2 - 10;
+        int bulletWidth = GamePanel.scaled(20);
+        int bulletX = x + width / 2 - bulletWidth / 2;
         int bulletY = y + height;
 
         int numBullets = 1;
@@ -202,9 +202,9 @@ public class Enemy {
 
         int bulletSpeed;
         if (level == 1) {
-            bulletSpeed = 5;
+            bulletSpeed = GamePanel.scaled(5);
         } else {
-            bulletSpeed = 6 + ((level - 2) / 2);
+            bulletSpeed = GamePanel.scaled(6 + ((level - 2) / 2));
         }
 
         boolean isBoss = (type == EnemyType.BOSS);
@@ -214,16 +214,18 @@ public class Enemy {
             bullet.setSpeed(bulletSpeed);
             enemyBullets.add(bullet);
         } else if (numBullets == 2) {
-            Bullet bullet1 = new Bullet(bulletX - 15, bulletY, 1, damage, enemyVariant, isBoss);
-            Bullet bullet2 = new Bullet(bulletX + 15, bulletY, 1, damage, enemyVariant, isBoss);
+            int spread = GamePanel.scaled(15);
+            Bullet bullet1 = new Bullet(bulletX - spread, bulletY, 1, damage, enemyVariant, isBoss);
+            Bullet bullet2 = new Bullet(bulletX + spread, bulletY, 1, damage, enemyVariant, isBoss);
             bullet1.setSpeed(bulletSpeed);
             bullet2.setSpeed(bulletSpeed);
             enemyBullets.add(bullet1);
             enemyBullets.add(bullet2);
         } else {
-            Bullet bullet1 = new Bullet(bulletX - 20, bulletY, 1, damage, enemyVariant, isBoss);
+            int spread = GamePanel.scaled(20);
+            Bullet bullet1 = new Bullet(bulletX - spread, bulletY, 1, damage, enemyVariant, isBoss);
             Bullet bullet2 = new Bullet(bulletX, bulletY, 1, damage, enemyVariant, isBoss);
-            Bullet bullet3 = new Bullet(bulletX + 20, bulletY, 1, damage, enemyVariant, isBoss);
+            Bullet bullet3 = new Bullet(bulletX + spread, bulletY, 1, damage, enemyVariant, isBoss);
             bullet1.setSpeed(bulletSpeed);
             bullet2.setSpeed(bulletSpeed);
             bullet3.setSpeed(bulletSpeed);
@@ -243,13 +245,14 @@ public class Enemy {
         bossShootAngle += 10;
         if (bossShootAngle >= 360) bossShootAngle = 0;
 
-        double baseBulletSpeed = 3.0 + (level * 0.3);
+        double baseBulletSpeed = GamePanel.scaledDouble(3.0 + (level * 0.3));
 
         for (int i = 0; i < numBullets; i++) {
             double angle = (Math.PI * 2 * i / numBullets) + (bossShootAngle * Math.PI / 180);
 
-            int bulletX = centerX + (int)(Math.cos(angle) * 30);
-            int bulletY = centerY + (int)(Math.sin(angle) * 30);
+            int spawnRadius = GamePanel.scaled(30);
+            int bulletX = centerX + (int)(Math.cos(angle) * spawnRadius);
+            int bulletY = centerY + (int)(Math.sin(angle) * spawnRadius);
 
             Bullet bullet = new Bullet(bulletX, bulletY, 1, damage, enemyVariant, true);
             bullet.setVelocity(Math.cos(angle) * baseBulletSpeed, Math.sin(angle) * baseBulletSpeed);
@@ -281,7 +284,7 @@ public class Enemy {
                 g2d.setColor(Color.ORANGE);
                 g2d.fillRect(x, y, width, height);
                 g2d.setColor(Color.RED);
-                g2d.setStroke(new BasicStroke(3));
+                g2d.setStroke(new BasicStroke(GamePanel.scaled(3)));
                 g2d.drawRect(x, y, width, height);
             }
         } else {
@@ -300,8 +303,9 @@ public class Enemy {
         }
 
         if (shootCooldown < 10) {
+            int indicatorSize = GamePanel.scaled(8);
             g2d.setColor(Color.YELLOW);
-            g2d.fillOval(x + width - 8, y + height - 8, 8, 8);
+            g2d.fillOval(x + width - indicatorSize, y + height - indicatorSize, indicatorSize, indicatorSize);
         }
     }
 
@@ -317,9 +321,9 @@ public class Enemy {
 
     private void drawHPBar(Graphics2D g2d) {
         int barWidth = width;
-        int barHeight = type == EnemyType.BOSS ? 8 : 6;
+        int barHeight = type == EnemyType.BOSS ? GamePanel.scaled(8) : GamePanel.scaled(6);
         int barX = x;
-        int barY = y - (type == EnemyType.BOSS ? 15 : 12);
+        int barY = y - (type == EnemyType.BOSS ? GamePanel.scaled(15) : GamePanel.scaled(12));
 
         g2d.setColor(Color.BLACK);
         g2d.fillRect(barX, barY, barWidth, barHeight);
@@ -342,11 +346,11 @@ public class Enemy {
         g2d.drawRect(barX, barY, barWidth, barHeight);
 
         if (type == EnemyType.BOSS) {
-            g2d.setFont(new Font("Arial", Font.BOLD, 12));
+            g2d.setFont(new Font("Arial", Font.BOLD, GamePanel.scaled(12)));
             String hpText = currentHP + "/" + maxHP;
             FontMetrics fm = g2d.getFontMetrics();
             int textX = barX + (barWidth - fm.stringWidth(hpText)) / 2;
-            g2d.drawString(hpText, textX, barY - 3);
+            g2d.drawString(hpText, textX, barY - GamePanel.scaled(3));
         }
     }
 

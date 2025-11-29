@@ -12,11 +12,15 @@ import java.util.List;
 import javax.swing.*;
 
 /**
- * GamePanel - REFACTORED với AssetManager
+ * GamePanel - FULL SCREEN VERSION với dynamic scaling
  */
 public class GamePanel extends JPanel implements ActionListener {
-    public static final int WIDTH = 800;
-    public static final int HEIGHT = 600;
+    // Dynamic screen dimensions
+    public static int WIDTH;
+    public static int HEIGHT;
+
+    // Scale factor cho các đối tượng (public để các class khác truy cập)
+    public static double SCALE_FACTOR = 1.0;
 
     private Timer gameTimer;
     private static final int FPS = 60;
@@ -49,6 +53,14 @@ public class GamePanel extends JPanel implements ActionListener {
     private int mouseY = 0;
 
     public GamePanel() {
+        // Lấy kích thước màn hình
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        WIDTH = (int) screenSize.getWidth();
+        HEIGHT = (int) screenSize.getHeight();
+
+        // Tính scale factor (base: 800x600)
+        SCALE_FACTOR = Math.min(WIDTH / 800.0, HEIGHT / 600.0);
+
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         setBackground(Color.BLACK);
         setFocusable(true);
@@ -68,7 +80,7 @@ public class GamePanel extends JPanel implements ActionListener {
         inputHandler = new InputHandler();
         assetManager = AssetManager.getInstance();
 
-        player = new Player(WIDTH / 2 - 40, HEIGHT - 130);
+        player = new Player(WIDTH / 2 - scaled(40), HEIGHT - scaled(130));
         enemies = new ArrayList<>();
         playerBullets = new ArrayList<>();
         enemyBullets = new ArrayList<>();
@@ -104,10 +116,10 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     private void setupButtons() {
-        int buttonWidth = 200;
-        int buttonHeight = 80;
+        int buttonWidth = scaled(200);
+        int buttonHeight = scaled(80);
         int startX = WIDTH / 2 - buttonWidth / 2;
-        int startY = HEIGHT / 2 + 50;
+        int startY = HEIGHT / 2 + scaled(50);
 
         BufferedImage startImg = assetManager.getStartButtonImage();
         if (startImg != null) {
@@ -117,7 +129,7 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         int muteX = WIDTH / 2 - buttonWidth / 2;
-        int muteY = startY + buttonHeight + 20;
+        int muteY = startY + buttonHeight + scaled(20);
 
         BufferedImage muteImg = assetManager.getMuteButtonImage();
         if (muteImg != null) {
@@ -127,7 +139,7 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         int restartX = WIDTH / 2 - buttonWidth / 2;
-        int restartY = HEIGHT / 2 + 20;
+        int restartY = HEIGHT / 2 + scaled(20);
 
         BufferedImage restartImg = assetManager.getRestartButtonImage();
         if (restartImg != null) {
@@ -139,7 +151,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
     private void handleMouseClick(int x, int y) {
         SoundManager soundMgr = assetManager.getSoundManager();
-        
+
         if (currentState == GameState.START) {
             if (startButton.isClicked(x, y)) {
                 soundMgr.playButtonSound();
@@ -173,8 +185,8 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     private void setupFonts() {
-        gameFont = new Font("Arial", Font.BOLD, 16);
-        bigFont = new Font("Arial", Font.BOLD, 32);
+        gameFont = new Font("Arial", Font.BOLD, scaled(16));
+        bigFont = new Font("Arial", Font.BOLD, scaled(48));
     }
 
     public void startGame() {
@@ -240,7 +252,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
     private void handleInput() {
         SoundManager soundMgr = assetManager.getSoundManager();
-        
+
         if (currentState == GameState.START) {
             if (inputHandler.isKeyJustPressed(InputHandler.KEY_ENTER)) {
                 soundMgr.playButtonSound();
@@ -368,7 +380,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
     private void checkCollisions() {
         SoundManager soundMgr = assetManager.getSoundManager();
-        
+
         Iterator<Bullet> bulletIterator = playerBullets.iterator();
         while (bulletIterator.hasNext()) {
             Bullet bullet = bulletIterator.next();
@@ -388,7 +400,7 @@ public class GamePanel extends JPanel implements ActionListener {
                         explosions.add(new Explosion(
                                 enemy.getX() + enemy.getWidth()/2,
                                 enemy.getY() + enemy.getHeight()/2,
-                                35
+                                scaled(35)
                         ));
                         score += enemy.getScoreValue();
                         spawnPowerUpItem(enemy.getX() + enemy.getWidth()/2, enemy.getY());
@@ -436,7 +448,7 @@ public class GamePanel extends JPanel implements ActionListener {
                 explosions.add(new Explosion(
                         enemy.getX() + enemy.getWidth()/2,
                         enemy.getY() + enemy.getHeight()/2,
-                        35
+                        scaled(35)
                 ));
 
                 if (tookDamage) {
@@ -540,14 +552,14 @@ public class GamePanel extends JPanel implements ActionListener {
 
         BufferedImage titleImg = assetManager.getTitleImage();
         if (titleImg != null) {
-            int titleWidth = 700;
-            int titleHeight = 160;
+            int titleWidth = scaled(700);
+            int titleHeight = scaled(160);
             int x = (WIDTH - titleWidth) / 2;
-            int y = 180;
+            int y = scaled(180);
             g2d.drawImage(titleImg, x, y, titleWidth, titleHeight, null);
         } else {
             g2d.setColor(Color.WHITE);
-            g2d.setFont(new Font("Arial", Font.BOLD, 48));
+            g2d.setFont(new Font("Arial", Font.BOLD, scaled(48)));
             String title = "SPACE INVADERS";
             FontMetrics fm = g2d.getFontMetrics();
             int x = (WIDTH - fm.stringWidth(title)) / 2;
@@ -563,12 +575,12 @@ public class GamePanel extends JPanel implements ActionListener {
         startButton.draw(g2d);
         muteButton.draw(g2d);
 
-        g2d.setFont(new Font("Arial", Font.PLAIN, 14));
+        g2d.setFont(new Font("Arial", Font.PLAIN, scaled(14)));
         g2d.setColor(Color.WHITE);
         String soundStatus = assetManager.getSoundManager().isSoundEnabled() ? "ON" : "OFF";
         FontMetrics fmSound = g2d.getFontMetrics();
         int soundX = WIDTH / 2 - fmSound.stringWidth(soundStatus) / 2;
-        int soundY = HEIGHT / 2 + 50 + 80 + 20 + 60 + 15;
+        int soundY = HEIGHT / 2 + scaled(50) + scaled(80) + scaled(20) + scaled(60) + scaled(15);
         g2d.drawString(soundStatus, soundX, soundY);
     }
 
@@ -586,11 +598,11 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Arial", Font.BOLD, 56));
+        g2d.setFont(new Font("Arial", Font.BOLD, scaled(56)));
         String scoreText = "Final Score: " + score;
         FontMetrics fm = g2d.getFontMetrics();
         int x = (WIDTH - fm.stringWidth(scoreText)) / 2;
-        int y = HEIGHT / 3 + 70;
+        int y = HEIGHT / 3 + scaled(70);
         g2d.drawString(scoreText, x, y);
 
         restartButton.draw(g2d);
@@ -603,7 +615,7 @@ public class GamePanel extends JPanel implements ActionListener {
         String title = "SPACE INVADERS";
         FontMetrics fm = g2d.getFontMetrics();
         int x = (WIDTH - fm.stringWidth(title)) / 2;
-        int y = HEIGHT / 2 - 50;
+        int y = HEIGHT / 2 - scaled(50);
         g2d.drawString(title, x, y);
     }
 
@@ -641,9 +653,9 @@ public class GamePanel extends JPanel implements ActionListener {
         g2d.setColor(Color.WHITE);
         g2d.setFont(gameFont);
 
-        g2d.drawString("Score: " + score, 10, 25);
-        g2d.drawString("Lives: " + lives, 10, 50);
-        g2d.drawString("Wave: " + waveManager.getCurrentWave(), 10, 75);
+        g2d.drawString("Score: " + score, scaled(10), scaled(25));
+        g2d.drawString("Lives: " + lives, scaled(10), scaled(50));
+        g2d.drawString("Wave: " + waveManager.getCurrentWave(), scaled(10), scaled(75));
     }
 
     private void drawPauseScreen(Graphics2D g2d) {
@@ -662,7 +674,7 @@ public class GamePanel extends JPanel implements ActionListener {
         String resumeText = "Press P to Resume";
         fm = g2d.getFontMetrics();
         x = (WIDTH - fm.stringWidth(resumeText)) / 2;
-        y += 50;
+        y += scaled(50);
         g2d.drawString(resumeText, x, y);
     }
 
@@ -675,5 +687,14 @@ public class GamePanel extends JPanel implements ActionListener {
         int x = (WIDTH - fm.stringWidth(scoreText)) / 2;
         int y = HEIGHT / 2;
         g2d.drawString(scoreText, x, y);
+    }
+
+    // Helper method để scale giá trị theo màn hình
+    public static int scaled(int value) {
+        return (int) (value * SCALE_FACTOR);
+    }
+
+    public static double scaledDouble(double value) {
+        return value * SCALE_FACTOR;
     }
 }

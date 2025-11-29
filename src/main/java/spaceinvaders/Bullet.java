@@ -1,14 +1,12 @@
-
-// ==================== Bullet.java ====================
 package spaceinvaders;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Bullet {
     private double x, y;
-    private int width = 20;
-    private int height = 30;
-    private int speed = 7;
+    private int width;
+    private int height;
+    private int speed;
     private int direction;
     private boolean active = true;
     private int damage = 1;
@@ -21,7 +19,7 @@ public class Bullet {
     private double velX = 0;
     private double velY = 0;
     private boolean useVelocity = false;
-    
+
     private int wave = 1;
     private boolean isBoss = false;
 
@@ -31,6 +29,11 @@ public class Bullet {
         this.direction = direction;
         this.piercing = false;
         this.assetManager = AssetManager.getInstance();
+
+        // Scale kích thước và tốc độ
+        this.width = GamePanel.scaled(20);
+        this.height = GamePanel.scaled(30);
+        this.speed = GamePanel.scaled(7);
     }
 
     public Bullet(int x, int y, int direction, int damage) {
@@ -40,8 +43,12 @@ public class Bullet {
         this.damage = damage;
         this.piercing = false;
         this.assetManager = AssetManager.getInstance();
+
+        this.width = GamePanel.scaled(20);
+        this.height = GamePanel.scaled(30);
+        this.speed = GamePanel.scaled(7);
     }
-    
+
     public Bullet(int x, int y, int direction, int damage, int wave, boolean isBoss) {
         this.x = x;
         this.y = y;
@@ -51,6 +58,10 @@ public class Bullet {
         this.isBoss = isBoss;
         this.piercing = false;
         this.assetManager = AssetManager.getInstance();
+
+        this.width = GamePanel.scaled(20);
+        this.height = GamePanel.scaled(30);
+        this.speed = GamePanel.scaled(7);
     }
 
     public Bullet(int x, int y, int directionY, int speedX, boolean piercing) {
@@ -58,10 +69,15 @@ public class Bullet {
         this.y = y;
         this.direction = directionY;
         this.piercing = piercing;
-        this.velX = speedX;
-        this.velY = directionY * speed;
-        this.useVelocity = (speedX != 0);
         this.assetManager = AssetManager.getInstance();
+
+        this.width = GamePanel.scaled(20);
+        this.height = GamePanel.scaled(30);
+        this.speed = GamePanel.scaled(7);
+
+        this.velX = speedX;
+        this.velY = directionY * this.speed;
+        this.useVelocity = (speedX != 0);
     }
 
     public void setVelocity(double velX, double velY) {
@@ -73,7 +89,7 @@ public class Bullet {
     public void setSpeed(int speed) {
         this.speed = speed;
     }
-    
+
     public void setWaveInfo(int wave, boolean isBoss) {
         this.wave = wave;
         this.isBoss = isBoss;
@@ -87,7 +103,9 @@ public class Bullet {
             y += speed * direction;
         }
 
-        if (y < -50 || y > GamePanel.HEIGHT + 50 || x < -50 || x > GamePanel.WIDTH + 50) {
+        int boundary = GamePanel.scaled(50);
+        if (y < -boundary || y > GamePanel.HEIGHT + boundary ||
+                x < -boundary || x > GamePanel.WIDTH + boundary) {
             active = false;
         }
     }
@@ -115,16 +133,16 @@ public class Bullet {
                 g2d.fillRect((int)x - 1, (int)y, width + 2, height);
             }
             g2d.setColor(new Color(0, 200, 255, 100));
-            g2d.fillRect((int)x, (int)y + height, width, 5);
+            g2d.fillRect((int)x, (int)y + height, width, GamePanel.scaled(5));
         } else if (direction > 0) {
             BufferedImage bulletImg = null;
-            
+
             if (isBoss) {
                 bulletImg = assetManager.getBossBulletImage(wave);
             } else {
                 bulletImg = assetManager.getEnemyBulletImage(wave);
             }
-            
+
             if (bulletImg != null) {
                 g2d.drawImage(bulletImg, (int)x, (int)y, width, height, null);
             } else {

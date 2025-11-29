@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * WaveManager  Mỗi wave có enemy và boss riêng, lặp lại sau 5 wave
+ * WaveManager - Full screen version với dynamic positioning
  */
 public class WaveManager {
     private int currentWave = 1;
@@ -14,7 +14,6 @@ public class WaveManager {
     private boolean bossSpawnRequested = false;
     private Random random;
 
-    // Scaling parameters
     private double baseEnemySpeed = 1.0;
     private int baseEnemyHP = 1;
     private int baseEnemyDamage = 1;
@@ -24,14 +23,11 @@ public class WaveManager {
         calculateWaveParameters();
     }
 
-    /**
-     * Tính toán tham số cho wave hiện tại
-     */
     private void calculateWaveParameters() {
         int baseEnemies = 10;
 
         if (currentWave == 1) {
-            enemiesPerWave = 8 + random.nextInt(5); // 8-12
+            enemiesPerWave = 8 + random.nextInt(5);
         } else {
             enemiesPerWave = baseEnemies + (currentWave - 2) * 2;
             if (enemiesPerWave > 20) enemiesPerWave = 20;
@@ -52,39 +48,32 @@ public class WaveManager {
         bossSpawnRequested = false;
     }
 
-    /**
-     * Lấy enemy variant (1-5) dựa trên wave, lặp lại sau 5 wave
-     */
     private int getEnemyVariantForWave() {
-        // Wave 1->enemy1, 2->enemy2, ..., 5->enemy5, 6->enemy1, ...
         return ((currentWave - 1) % 5) + 1;
     }
 
-    /**
-     *  Spawn enemies cho wave hiện tại
-     */
     public void spawnWave(List<Enemy> enemies, int screenWidth, int screenHeight) {
         if (enemiesSpawned < enemiesPerWave) {
             int enemiesToSpawn = enemiesPerWave - enemiesSpawned;
-            int enemyVariant = getEnemyVariantForWave(); // Lấy variant cho wave này
+            int enemyVariant = getEnemyVariantForWave();
 
-            int cols = Math.min(10, enemiesToSpawn);
+            // Tính toán số cột và hàng dựa trên kích thước màn hình
+            int maxCols = Math.min(10, (screenWidth - GamePanel.scaled(160)) / GamePanel.scaled(70));
+            int cols = Math.min(maxCols, enemiesToSpawn);
             int rows = (int)Math.ceil((double)enemiesToSpawn / cols);
 
-            int startX = 80;
-            int startY = 50;
-            int spacingX = 70;
-            int spacingY = 60;
+            int startX = GamePanel.scaled(80);
+            int startY = GamePanel.scaled(50);
+            int spacingX = GamePanel.scaled(70);
+            int spacingY = GamePanel.scaled(60);
 
             int enemyIndex = 0;
 
-            // TẤT CẢ ENEMY TRONG WAVE NÀY ĐỀU LÀ NORMAL VÀ CÙNG VARIANT
             for (int row = 0; row < rows && enemyIndex < enemiesToSpawn; row++) {
                 for (int col = 0; col < cols && enemyIndex < enemiesToSpawn; col++) {
                     int x = startX + col * spacingX;
                     int y = startY + row * spacingY;
 
-                    //  Thêm tham số enemyVariant vào constructor
                     Enemy enemy = new Enemy(x, y, EnemyType.NORMAL, currentWave,
                             baseEnemySpeed, baseEnemyHP, baseEnemyDamage, enemyVariant);
                     enemies.add(enemy);
@@ -97,9 +86,6 @@ public class WaveManager {
         }
     }
 
-    /**
-     * Kiểm tra và spawn boss nếu đủ điều kiện
-     */
     public void checkAndSpawnBoss(List<Enemy> enemies, int screenWidth, int screenHeight) {
         if (enemiesSpawned >= enemiesPerWave && !bossSpawnRequested) {
             int activeNormalCount = 0;
@@ -122,22 +108,21 @@ public class WaveManager {
         }
     }
 
-    /**
-     *  Spawn boss với variant tương ứng wave
-     */
     private void spawnBoss(List<Enemy> enemies, int screenWidth, int screenHeight) {
         bossSpawnRequested = true;
         bossSpawned = true;
 
-        int bossVariant = getEnemyVariantForWave(); // Boss cùng variant với enemy trong wave
-        int x = screenWidth / 2 - 60;
-        int y = 60;
+        int bossVariant = getEnemyVariantForWave();
+
+        // Boss xuất hiện ở giữa màn hình với kích thước scaled
+        int bossWidth = GamePanel.scaled(250);
+        int x = screenWidth / 2 - bossWidth / 2;
+        int y = GamePanel.scaled(60);
 
         int bossHP = baseEnemyHP * 15 + (currentWave * 8);
         double bossSpeed = baseEnemySpeed * 0.4;
         int bossDamage = baseEnemyDamage * 4 + (currentWave / 2);
 
-        //  Thêm tham số bossVariant vào constructor
         Enemy boss = new Enemy(x, y, EnemyType.BOSS, currentWave,
                 bossSpeed, bossHP, bossDamage, bossVariant);
         enemies.add(boss);
@@ -145,9 +130,6 @@ public class WaveManager {
         System.out.println("[BOSS] Spawned boss variant " + bossVariant + " for wave " + currentWave);
     }
 
-    /**
-     * Kiểm tra wave hoàn thành
-     */
     public boolean isWaveComplete(List<Enemy> enemies) {
         if (!bossSpawned) {
             return false;
@@ -161,16 +143,12 @@ public class WaveManager {
         return true;
     }
 
-    /**
-     * Chuyển sang wave tiếp theo
-     */
     public void nextWave() {
         currentWave++;
         calculateWaveParameters();
         System.out.println("[WAVE] Starting wave " + currentWave + " (enemy variant: " + getEnemyVariantForWave() + ")");
     }
 
-    // Getters
     public int getCurrentWave() {
         return currentWave;
     }
